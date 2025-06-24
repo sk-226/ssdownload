@@ -207,8 +207,14 @@ uv run pre-commit install
 ### Running Tests
 
 ```bash
-# Run all tests
+# Run all tests (excluding slow network tests)
 uv run pytest
+
+# Run all tests including slow network/download tests
+uv run pytest -m "slow or not slow"
+
+# Run only fast unit tests
+uv run pytest -m "not slow"
 
 # Run with coverage
 uv run pytest --cov=ssdownload --cov-report=html
@@ -216,9 +222,19 @@ uv run pytest --cov=ssdownload --cov-report=html
 # Run specific test file
 uv run pytest tests/test_client.py -v
 
-# Run tests for specific module
-uv run pytest tests/test_index_manager.py tests/test_downloader.py
+# Run API integration tests
+uv run pytest tests/test_api_integration.py -v
+
+# Run real download tests (requires network)
+uv run pytest tests/test_api_integration.py -m slow -v
 ```
+
+**Test Categories:**
+- **Unit tests**: Fast, isolated tests with mocking (default)
+- **Integration tests**: API functionality tests with real network calls
+- **Slow tests**: Actual file download tests (marked with `@pytest.mark.slow`)
+
+All test outputs are saved to `test_output/` directory to keep the project clean.
 
 ### Code Quality
 

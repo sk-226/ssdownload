@@ -89,6 +89,14 @@ python_files = ["test_*.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
 asyncio_mode = "auto"
+markers = [
+    "slow: marks tests as slow (requiring network access or file I/O)",
+    "integration: marks tests as integration tests",
+]
+addopts = [
+    "--strict-markers",
+    "--disable-warnings",
+]
 
 [tool.uv]
 dev-dependencies = [

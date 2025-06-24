@@ -255,7 +255,21 @@ class SuiteSparseDownloader:
         Returns:
             List of matching matrix metadata dictionaries
         """
-        return asyncio.run(self._list_matrices_async(filter_obj, limit))
+        try:
+            # Check if we're already in an event loop
+            loop = asyncio.get_running_loop()
+            # If we're in a loop, we can't use asyncio.run
+            import warnings
+            warnings.warn(
+                "list_matrices() called from within an async context. "
+                "Consider using find_matrices() directly instead.",
+                RuntimeWarning
+            )
+            # Return empty list to avoid blocking
+            return []
+        except RuntimeError:
+            # No event loop running, safe to use asyncio.run
+            return asyncio.run(self._list_matrices_async(filter_obj, limit))
 
     async def _list_matrices_async(
         self,
