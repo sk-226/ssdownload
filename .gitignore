@@ -1,0 +1,6 @@
+.vscode/
+.claude/
+.pytest_cache/
+.ruff_cache/
+.venv/
+test_output/
