@@ -372,7 +372,6 @@ Advanced filter class for matrix search with type safety.
 ```python
 Filter(
     spd: Optional[bool] = None,                                    # Symmetric positive definite
-    posdef: Optional[bool] = None,                                 # Positive definite
     n_rows: Optional[Tuple[Optional[int], Optional[int]]] = None,  # Row count range
     n_cols: Optional[Tuple[Optional[int], Optional[int]]] = None,  # Column count range
     nnz: Optional[Tuple[Optional[int], Optional[int]]] = None,     # Non-zero count range
