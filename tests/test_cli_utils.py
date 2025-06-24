@@ -49,12 +49,6 @@ class TestCliUtils:
         assert result.spd is True
         assert result.posdef is None
 
-    def test_build_filter_posdef_only(self):
-        """Test building filter with only posdef flag."""
-        result = build_filter(posdef=True)
-        assert isinstance(result, Filter)
-        assert result.posdef is True
-        assert result.spd is None
 
     def test_build_filter_string_fields(self):
         """Test building filter with string fields."""
@@ -104,7 +98,6 @@ class TestCliUtils:
         """Test building filter with all parameters."""
         result = build_filter(
             spd=True,
-            posdef=True,
             size="1000:5000",
             rows="2000:3000",
             cols="4000:6000",
@@ -117,7 +110,6 @@ class TestCliUtils:
         )
         assert isinstance(result, Filter)
         assert result.spd is True
-        assert result.posdef is True
         assert result.n_rows == (2000, 3000)  # Should override size
         assert result.n_cols == (4000, 6000)  # Should override size
         assert result.nnz == (None, 1000000)
@@ -129,7 +121,7 @@ class TestCliUtils:
 
     def test_build_filter_false_flags_ignored(self):
         """Test that false flags are ignored."""
-        result = build_filter(spd=False, posdef=False)
+        result = build_filter(spd=False)
         assert result is None  # No filters set
 
     def test_build_filter_empty_strings_ignored(self):

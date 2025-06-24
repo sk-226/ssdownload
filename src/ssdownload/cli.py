@@ -125,9 +125,6 @@ def bulk(
     spd: bool = typer.Option(
         False, "--spd", help="Symmetric positive definite matrices only"
     ),
-    posdef: bool = typer.Option(
-        False, "--posdef", help="Positive definite matrices only"
-    ),
     size: str | None = typer.Option(
         None, "--size", help="Matrix size range (e.g., '1000:5000')"
     ),
@@ -163,7 +160,6 @@ def bulk(
     # Build filter
     filter_obj = build_filter(
         spd=spd,
-        posdef=posdef,
         size=size,
         rows=rows,
         cols=cols,
@@ -196,9 +192,6 @@ def list(
     spd: bool = typer.Option(
         False, "--spd", help="Symmetric positive definite matrices only"
     ),
-    posdef: bool = typer.Option(
-        False, "--posdef", help="Positive definite matrices only"
-    ),
     size: str | None = typer.Option(
         None, "--size", help="Matrix size range (e.g., '1000:5000')"
     ),
@@ -225,7 +218,6 @@ def list(
     # Build filter
     filter_obj = build_filter(
         spd=spd,
-        posdef=posdef,
         size=size,
         rows=rows,
         cols=cols,

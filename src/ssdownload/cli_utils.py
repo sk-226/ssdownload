@@ -19,7 +19,6 @@ def parse_range(value: str) -> tuple[int | None, int | None]:
 
 def build_filter(
     spd: bool = False,
-    posdef: bool = False,
     size: str | None = None,
     rows: str | None = None,
     cols: str | None = None,
@@ -35,8 +34,6 @@ def build_filter(
 
     if spd:
         filter_kwargs["spd"] = True
-    if posdef:
-        filter_kwargs["posdef"] = True
     if field:
         filter_kwargs["field"] = field
     if group:

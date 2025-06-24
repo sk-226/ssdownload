@@ -133,7 +133,6 @@ print(f"Available groups: {sorted(groups)}")
 ### CLI Filters
 
 - `--spd`: Symmetric positive definite matrices only
-- `--posdef`: Positive definite matrices only
 - `--size MIN:MAX`: Matrix size range (applies to both rows and columns)
 - `--rows MIN:MAX`: Number of rows range
 - `--cols MIN:MAX`: Number of columns range
