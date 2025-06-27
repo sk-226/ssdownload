@@ -165,7 +165,7 @@ ssdl groups
 These filters can be used with `bulk` and `list` commands:
 
 ### Matrix Properties
-- `--spd` - Symmetric positive definite matrices only
+- `--spd` - Symmetric positive definite matrices only (automatically filters for symmetric AND positive definite AND square matrices)
 - `--field TYPE` - Field type: `real`, `complex`, `integer`, `binary`
 - `--structure TYPE` - Matrix structure: `symmetric`, `unsymmetric`, etc.
 
