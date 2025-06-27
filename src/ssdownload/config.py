@@ -33,7 +33,7 @@ class Config:
     # URLs
     BASE_URL: str = "https://suitesparse-collection-website.herokuapp.com"
     FILES_BASE_URL: str = "https://suitesparse-collection-website.herokuapp.com"
-    CSV_INDEX_URL: str = "http://sparse-files.engr.tamu.edu/files/ssstats.csv"
+    CSV_INDEX_URL: str = "https://sparse.tamu.edu/files/ssstats.csv"
 
     # Cache settings
     CACHE_TTL: int = 3600  # 1 hour

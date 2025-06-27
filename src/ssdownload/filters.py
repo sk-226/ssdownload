@@ -41,9 +41,25 @@ class Filter:
         Returns:
             True if matrix matches all filter criteria
         """
-        # Check SPD flag
-        if self.spd is not None and matrix_info.get("spd") != self.spd:
-            return False
+        # Check SPD (Symmetric Positive Definite) - must be both symmetric AND positive definite
+        if self.spd is not None:
+            if self.spd:
+                # When SPD is required, check that matrix is both symmetric AND positive definite
+                is_symmetric = matrix_info.get("symmetric", False)
+                is_posdef = matrix_info.get("spd", False) or matrix_info.get("posdef", False)
+                
+                # Also ensure it's square (SPD matrices must be square)
+                rows = matrix_info.get("num_rows", matrix_info.get("rows"))
+                cols = matrix_info.get("num_cols", matrix_info.get("cols"))
+                is_square = rows == cols if (rows is not None and cols is not None) else True
+                
+                if not (is_symmetric and is_posdef and is_square):
+                    return False
+            else:
+                # When SPD is explicitly False, exclude SPD matrices
+                spd_flag = matrix_info.get("spd", False)
+                if spd_flag:
+                    return False
 
         # Check positive definite flag
         if self.posdef is not None and matrix_info.get("posdef") != self.posdef:

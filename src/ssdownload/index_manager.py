@@ -19,18 +19,18 @@ Example:
     >>> groups = await manager.get_groups()
     >>> matrix_info = await manager.find_matrix_info("ct20stif")
 
-The CSV format from SuiteSparse contains the following columns:
+The CSV format from SuiteSparse contains the following columns (based on ssgui.java):
 - Group name
 - Matrix name
 - Number of rows
 - Number of columns
 - Number of nonzeros
-- Real flag (1/0)
-- Binary flag (1/0)
-- 2D/3D flag (1/0)
-- Symmetric flag (1/0)
-- SPD flag (1/0)
-- Reserved field
+- isReal flag (1=real, 0=complex)
+- isBinary flag (1=binary, 0=not binary)
+- isND flag (1=2D/3D discretization, 0=not)
+- posdef flag (1=symmetric positive definite, 0=not SPD)
+- Pattern symmetry (0-1 ratio)
+- Numerical symmetry (0-1 ratio)
 - Kind description
 - NNZ with explicit zeros
 """
@@ -124,12 +124,14 @@ class IndexManager:
         # Skip first two lines (count and date)
         data_lines = lines[2:]
 
-        for line in data_lines:
+        for index, line in enumerate(data_lines):
             if not line.strip():
                 continue
 
             matrix_info = self._parse_csv_line(line)
             if matrix_info:
+                # Add matrix ID based on position (1-indexed)
+                matrix_info["matrix_id"] = index + 1
                 matrices.append(matrix_info)
 
         return matrices
@@ -141,23 +143,29 @@ class IndexManager:
             return None
 
         try:
+            # Parse based on official SuiteSparse ssgui.java format
             matrix_info = {
                 "group": parts[0],
                 "name": parts[1],
                 "rows": int(parts[2]),
                 "cols": int(parts[3]),
                 "nnz": int(parts[4]),
-                "real": bool(int(parts[5])),
-                "binary": bool(int(parts[6])),
-                "complex": not bool(int(parts[5])),  # If not real, assume complex
-                "2d_3d": bool(int(parts[7])),
-                "symmetric": bool(int(parts[8])),
-                "spd": bool(int(parts[9])),
+                "real": bool(int(parts[5])),                # isReal: 1=real, 0=complex
+                "binary": bool(int(parts[6])),              # isBinary: 1=binary, 0=not
+                "complex": not bool(int(parts[5])),         # If not real, assume complex
+                "2d_3d": bool(int(parts[7])),               # isND: 1=2D/3D discretization
+                "spd": bool(int(parts[8])),                 # posdef: 1=SPD, 0=not SPD
+                "pattern_symmetry": float(parts[9]),        # Pattern symmetry (0-1)
+                "numerical_symmetry": float(parts[10]),     # Numerical symmetry (0-1)
                 "kind": parts[11] if len(parts) > 11 else "",
                 "nnz_with_explicit_zeros": int(parts[12])
                 if len(parts) > 12
                 else int(parts[4]),
             }
+            
+            # Derive symmetric flag from numerical_symmetry
+            # Consider matrices with >99% numerical symmetry as symmetric
+            matrix_info["symmetric"] = matrix_info["numerical_symmetry"] >= 0.99
 
             # Add derived fields for compatibility
             matrix_info.update(
