@@ -17,7 +17,7 @@ class TestConfig:
         )
         assert (
             Config.CSV_INDEX_URL
-            == "http://sparse-files.engr.tamu.edu/files/ssstats.csv"
+            == "https://sparse.tamu.edu/files/ssstats.csv"
         )
         assert Config.CACHE_TTL == 3600
         assert Config.MAX_WORKERS == 8

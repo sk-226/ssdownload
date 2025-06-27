@@ -24,8 +24,8 @@ def sample_csv_content():
     """Sample CSV content from SuiteSparse."""
     return """2
 2023-12-01
-Boeing,ct20stif,52329,52329,1566095,1,0,0,1,1,0,,1566095
-HB,bcsstk01,48,48,224,1,0,0,1,1,0,,224"""
+Boeing,ct20stif,52329,52329,1566095,1,0,0,1,0.5,1.0,,1566095
+HB,bcsstk01,48,48,224,1,0,0,1,1.0,1.0,,224"""
 
 
 @pytest.fixture
@@ -102,7 +102,8 @@ class TestIndexManager:
         assert parsed[0]["name"] == "ct20stif"
         assert parsed[0]["rows"] == 52329
         assert parsed[0]["field"] == "real"
-        assert parsed[0]["structure"] == "symmetric"
+        assert parsed[0]["structure"] == "symmetric"   # ct20stif has numerical_symmetry=1.0, so symmetric  
+        assert parsed[1]["structure"] == "symmetric"   # bcsstk01 has numerical_symmetry=1.0, so symmetric
 
     def test_parse_csv_line_valid(self, temp_cache_dir):
         """Test parsing a valid CSV line."""

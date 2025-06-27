@@ -22,13 +22,39 @@ class TestFilter:
         """Test SPD filtering."""
         filter_obj = Filter(spd=True)
 
-        # Should match SPD matrix
-        spd_matrix = {"spd": True, "name": "test"}
+        # Should match SPD matrix (symmetric + posdef + square)
+        spd_matrix = {
+            "symmetric": True, 
+            "spd": True, 
+            "num_rows": 100, 
+            "num_cols": 100, 
+            "name": "test"
+        }
         assert filter_obj.matches(spd_matrix)
 
         # Should not match non-SPD matrix
-        non_spd_matrix = {"spd": False, "name": "test"}
+        non_spd_matrix = {"spd": False, "symmetric": False, "name": "test"}
         assert not filter_obj.matches(non_spd_matrix)
+        
+        # Should not match non-symmetric matrix even if marked as spd
+        non_symmetric = {
+            "symmetric": False, 
+            "spd": True, 
+            "num_rows": 100, 
+            "num_cols": 100, 
+            "name": "test"
+        }
+        assert not filter_obj.matches(non_symmetric)
+        
+        # Should not match non-square matrix
+        non_square = {
+            "symmetric": True, 
+            "spd": True, 
+            "num_rows": 100, 
+            "num_cols": 200, 
+            "name": "test"
+        }
+        assert not filter_obj.matches(non_square)
 
     def test_size_range_filter(self):
         """Test size range filtering."""
@@ -102,10 +128,12 @@ class TestFilter:
         """Test filtering with multiple criteria."""
         filter_obj = Filter(spd=True, n_rows=(100, 1000), field="real", group="Boeing")
 
-        # Should match all criteria
+        # Should match all criteria (SPD requires symmetric + spd + square)
         all_match = {
+            "symmetric": True,
             "spd": True,
             "num_rows": 500,
+            "num_cols": 500,  # Must be square for SPD
             "field": "real",
             "group": "Boeing",
             "name": "test",
