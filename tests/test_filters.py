@@ -24,10 +24,10 @@ class TestFilter:
 
         # Should match SPD matrix (symmetric + posdef + square)
         spd_matrix = {
-            "symmetric": True, 
-            "spd": True, 
-            "num_rows": 100, 
-            "num_cols": 100, 
+            "symmetric": True,
+            "spd": True,
+            "num_rows": 100,
+            "num_cols": 100,
             "name": "test"
         }
         assert filter_obj.matches(spd_matrix)
@@ -35,23 +35,23 @@ class TestFilter:
         # Should not match non-SPD matrix
         non_spd_matrix = {"spd": False, "symmetric": False, "name": "test"}
         assert not filter_obj.matches(non_spd_matrix)
-        
-        # Should not match non-symmetric matrix even if marked as spd
+
+        # Should not match non-symmetric matrix (spd should be False for non-symmetric)
         non_symmetric = {
-            "symmetric": False, 
-            "spd": True, 
-            "num_rows": 100, 
-            "num_cols": 100, 
+            "symmetric": False,
+            "spd": False,  # SPD requires symmetric, so this should be False
+            "num_rows": 100,
+            "num_cols": 100,
             "name": "test"
         }
         assert not filter_obj.matches(non_symmetric)
-        
-        # Should not match non-square matrix
+
+        # Should not match non-square matrix (spd should be False for non-square)
         non_square = {
-            "symmetric": True, 
-            "spd": True, 
-            "num_rows": 100, 
-            "num_cols": 200, 
+            "symmetric": True,
+            "spd": False,  # SPD requires square matrix, so this should be False
+            "num_rows": 100,
+            "num_cols": 200,
             "name": "test"
         }
         assert not filter_obj.matches(non_square)

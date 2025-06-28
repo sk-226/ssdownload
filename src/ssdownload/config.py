@@ -20,10 +20,13 @@ Attributes:
     CHUNK_SIZE: File download chunk size in bytes
 """
 
+import os
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Any
 
 import httpx
+from platformdirs import user_cache_dir
 
 
 @dataclass
@@ -140,3 +143,29 @@ class Config:
         """
         base_url = cls.get_matrix_url(group, name, format_type)
         return f"{base_url}.md5"
+
+    @classmethod
+    def get_default_cache_dir(cls) -> Path:
+        """Get the default system cache directory for ssdownload.
+
+        Uses platformdirs to get the appropriate cache directory for the current OS:
+        - Linux/macOS: ~/.cache/ssdownload/
+        - Windows: %LOCALAPPDATA%/ssdownload/cache/
+
+        Can be overridden by setting the SSDOWNLOAD_CACHE_DIR environment variable.
+
+        Returns:
+            Path to the default cache directory
+
+        Example:
+            >>> cache_dir = Config.get_default_cache_dir()
+            >>> print(cache_dir)
+            PosixPath('/home/user/.cache/ssdownload')
+        """
+        # Allow override via environment variable
+        env_cache_dir = os.getenv("SSDOWNLOAD_CACHE_DIR")
+        if env_cache_dir:
+            return Path(env_cache_dir)
+
+        # Use platformdirs for system-appropriate cache directory
+        return Path(user_cache_dir("ssdownload", appauthor=False))

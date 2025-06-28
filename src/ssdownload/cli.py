@@ -59,7 +59,7 @@ def download(
             # Just matrix name - search for group automatically
             console.print(f"🔍 Searching for matrix '{identifier}'...")
             result = asyncio.run(downloader.download_by_name(identifier, format))
-        
+
         console.print(f"✓ Downloaded: {result}")
     except Exception as e:
         console.print(f"✗ Error: {e}", style="red")
@@ -314,7 +314,7 @@ def info(
             # Use name filter to find the matrix
             name_filter = Filter(name=identifier)
             matrices = downloader.list_matrices(name_filter, limit=10)
-            
+
             # Find exact match
             exact_matches = [m for m in matrices if m.get('name') == identifier]
             if not exact_matches:
@@ -326,11 +326,11 @@ def info(
                     console.print(f"  {m.get('group', '')}/{m.get('name', '')}")
                 console.print("Please specify the group with --group or use group/name format")
                 raise typer.Exit(1)
-            
+
             matrix = exact_matches[0]
             group_name = matrix.get('group', '')
             matrix_name = matrix.get('name', '')
-        
+
         if 'matrix' not in locals():
             # Find the specific matrix using group and name
             filter_obj = Filter(group=group_name, name=matrix_name)
@@ -353,42 +353,43 @@ def info(
             ("Matrix ID", matrix.get("matrix_id", "Unknown")),
             ("Group", matrix.get("group")),
             ("Name", matrix.get("name")),
-            
+
             # Dimensions and structure
             ("Dimensions", f"{matrix.get('rows', 0)}×{matrix.get('cols', 0)}"),
             ("Nonzeros (NNZ)", f"{matrix.get('nnz', 0):,}"),
-            ("NNZ with Explicit Zeros", f"{matrix.get('nnz_with_explicit_zeros', 0):,}"),
-            
+            ("Pattern Entries", f"{matrix.get('pattern_entries', 0):,}"),
+
             # Mathematical properties
             ("Symmetric", matrix.get("symmetric")),
+            ("Positive Definite", matrix.get("posdef")),
             ("SPD (Symmetric Positive Definite)", matrix.get("spd")),
-            ("Pattern Symmetry", f"{matrix.get('pattern_symmetry', 0):.3f}" if matrix.get('pattern_symmetry') is not None else "Unknown"),
-            ("Numerical Symmetry", f"{matrix.get('numerical_symmetry', 0):.3f}" if matrix.get('numerical_symmetry') is not None else "Unknown"),
-            
+            ("Pattern Symmetry", f"{matrix.get('pattern_symmetry', 0)*100:.0f}%" if matrix.get('pattern_symmetry') is not None else "Unknown"),
+            ("Numerical Symmetry", f"{matrix.get('numerical_symmetry', 0)*100:.0f}%" if matrix.get('numerical_symmetry') is not None else "Unknown"),
+
             # Field type and properties
             ("Field Type", matrix.get("field", "Unknown")),
             ("Real", matrix.get("real")),
             ("Binary", matrix.get("binary")),
             ("Complex", matrix.get("complex")),
             ("2D/3D Discretization", matrix.get("2d_3d")),
-            
+
             # Problem classification
             ("Problem Type", matrix.get("kind", "Unknown")),
         ]
-        
+
         # Add rows with proper formatting
         for label, value in display_fields:
             if value is not None:
                 if isinstance(value, bool):
                     formatted_value = "✓" if value else "✗"
-                elif isinstance(value, (int, float)) and not isinstance(value, bool):
+                elif isinstance(value, int | float) and not isinstance(value, bool):
                     if isinstance(value, float) and label not in ["Pattern Symmetry", "Numerical Symmetry"]:
                         formatted_value = f"{value:,.0f}"
                     else:
                         formatted_value = str(value)
                 else:
                     formatted_value = str(value)
-                
+
                 table.add_row(label, formatted_value)
 
         console.print(table)

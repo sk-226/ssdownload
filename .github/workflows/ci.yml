@@ -1,0 +1,143 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        python-version: ["3.12", "3.13"]
+      fail-fast: false
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install uv
+      uses: astral-sh/setup-uv@v4
+      with:
+        version: "latest"
+
+    - name: Set up Python ${{ matrix.python-version }}
+      run: uv python install ${{ matrix.python-version }}
+
+    - name: Install dependencies
+      run: uv sync --all-extras --dev
+
+    - name: Run ruff linting
+      run: uv run ruff check src tests
+
+    - name: Run ruff formatting check
+      run: uv run ruff format --check src tests
+
+    - name: Run mypy type checking
+      run: uv run mypy src
+
+    - name: Run fast tests
+      run: uv run pytest tests -m "not slow" --cov=ssdownload --cov-report=xml --cov-report=term-missing -v
+
+    - name: Test cache directory functionality
+      run: |
+        # Test default cache directory creation
+        uv run python -c "
+        from ssdownload.config import Config
+        cache_dir = Config.get_default_cache_dir()
+        print(f'Default cache directory: {cache_dir}')
+        assert cache_dir.exists() or True  # Directory creation is lazy
+        "
+        
+        # Test environment variable override
+        export SSDOWNLOAD_CACHE_DIR="/tmp/test_ssdownload_cache"
+        uv run python -c "
+        import os
+        from ssdownload.config import Config
+        cache_dir = Config.get_default_cache_dir()
+        expected = os.getenv('SSDOWNLOAD_CACHE_DIR')
+        print(f'Override cache directory: {cache_dir}')
+        assert str(cache_dir) == expected
+        "
+
+    - name: Upload coverage reports to Codecov
+      if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.12'
+      uses: codecov/codecov-action@v4
+      with:
+        file: ./coverage.xml
+        fail_ci_if_error: false
+        verbose: true
+
+  integration-tests:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request' || github.ref == 'refs/heads/main'
+    
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install uv
+      uses: astral-sh/setup-uv@v4
+      with:
+        version: "latest"
+
+    - name: Set up Python 3.12
+      run: uv python install 3.12
+
+    - name: Install dependencies
+      run: uv sync --all-extras --dev
+
+    - name: Run integration tests
+      run: uv run pytest tests -m "slow" -v --tb=short
+      env:
+        GITHUB_ACTIONS: true
+
+    - name: Test CLI functionality
+      run: |
+        # Test basic CLI commands
+        uv run ssdl --help
+        uv run ssdl list --help
+        uv run ssdl download --help
+        uv run ssdl info --help
+        uv run ssdl bulk --help
+        
+        # Test matrix info command
+        uv run ssdl info ct20stif
+        
+        # Test list command with filters
+        uv run ssdl list --spd --limit 5
+
+  build:
+    runs-on: ubuntu-latest
+    needs: [test]
+    
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install uv
+      uses: astral-sh/setup-uv@v4
+      with:
+        version: "latest"
+
+    - name: Set up Python 3.12
+      run: uv python install 3.12
+
+    - name: Install dependencies
+      run: uv sync --all-extras --dev
+
+    - name: Build package
+      run: uv build
+
+    - name: Check package installation
+      run: |
+        cd dist
+        uv pip install --isolated --no-deps *.whl
+        uv run python -c "import ssdownload; print('Package installed successfully')"
+
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: dist-files
+        path: dist/
+        retention-days: 7

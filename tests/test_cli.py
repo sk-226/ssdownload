@@ -229,6 +229,8 @@ class TestCLI:
         mock_matrix = {
             "group": "Boeing",
             "name": "ct20stif",
+            "rows": 52329,
+            "cols": 52329,
             "num_rows": 52329,
             "num_cols": 52329,
             "nnz": 2698463,

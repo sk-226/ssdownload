@@ -1,5 +1,8 @@
 """Tests for config module."""
 
+import os
+from pathlib import Path
+
 import pytest
 
 from ssdownload.config import Config
@@ -113,3 +116,33 @@ class TestConfig:
         url = Config.get_checksum_url("Boeing", "ct20stif")
         expected = "https://suitesparse-collection-website.herokuapp.com/mat/Boeing/ct20stif.mat.md5"
         assert url == expected
+
+    def test_get_default_cache_dir(self):
+        """Test default cache directory detection."""
+        cache_dir = Config.get_default_cache_dir()
+
+        # Should return a Path object
+        assert isinstance(cache_dir, Path)
+
+        # Should contain 'ssdownload' in the path
+        assert 'ssdownload' in str(cache_dir)
+
+        # Should be an absolute path
+        assert cache_dir.is_absolute()
+
+    def test_get_default_cache_dir_with_env_override(self):
+        """Test cache directory override via environment variable."""
+        # Test with environment variable override
+        test_cache_dir = "/tmp/test_ssdownload_cache"
+        original_env = os.environ.get("SSDOWNLOAD_CACHE_DIR")
+
+        try:
+            os.environ["SSDOWNLOAD_CACHE_DIR"] = test_cache_dir
+            cache_dir = Config.get_default_cache_dir()
+            assert str(cache_dir) == test_cache_dir
+        finally:
+            # Restore original environment
+            if original_env is not None:
+                os.environ["SSDOWNLOAD_CACHE_DIR"] = original_env
+            else:
+                os.environ.pop("SSDOWNLOAD_CACHE_DIR", None)

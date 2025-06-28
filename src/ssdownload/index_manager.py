@@ -19,7 +19,7 @@ Example:
     >>> groups = await manager.get_groups()
     >>> matrix_info = await manager.find_matrix_info("ct20stif")
 
-The CSV format from SuiteSparse contains the following columns (based on ssgui.java):
+The CSV format from SuiteSparse contains the following columns (UFstats.csv format):
 - Group name
 - Matrix name
 - Number of rows
@@ -28,11 +28,11 @@ The CSV format from SuiteSparse contains the following columns (based on ssgui.j
 - isReal flag (1=real, 0=complex)
 - isBinary flag (1=binary, 0=not binary)
 - isND flag (1=2D/3D discretization, 0=not)
-- posdef flag (1=symmetric positive definite, 0=not SPD)
+- posdef flag (1=positive definite, 0=not)
 - Pattern symmetry (0-1 ratio)
 - Numerical symmetry (0-1 ratio)
 - Kind description
-- NNZ with explicit zeros
+- Pattern entries (number of zero and explicit zero entries in the sparse matrix)
 """
 
 import json
@@ -49,17 +49,18 @@ from .exceptions import IndexError
 class IndexManager:
     """Manages the SuiteSparse matrix index from CSV."""
 
-    def __init__(self, cache_dir: Path):
+    def __init__(self, cache_dir: Path | None = None):
         """Initialize the index manager.
 
         Args:
-            cache_dir: Directory to store cached index files
+            cache_dir: Directory to store cached index files. If None, uses the
+                      system default cache directory.
 
         Note:
             The cache directory will be created if it doesn't exist.
             Cache files are stored as JSON for fast loading.
         """
-        self.cache_dir = cache_dir
+        self.cache_dir = cache_dir or Config.get_default_cache_dir()
         self.cache_dir.mkdir(parents=True, exist_ok=True)
         self._csv_index_cache: list[dict[str, Any]] | None = None
         self._csv_index_cache_time: float = 0
@@ -143,7 +144,7 @@ class IndexManager:
             return None
 
         try:
-            # Parse based on official SuiteSparse ssgui.java format
+            # Parse based on official UFstats.csv format
             matrix_info = {
                 "group": parts[0],
                 "name": parts[1],
@@ -154,18 +155,27 @@ class IndexManager:
                 "binary": bool(int(parts[6])),              # isBinary: 1=binary, 0=not
                 "complex": not bool(int(parts[5])),         # If not real, assume complex
                 "2d_3d": bool(int(parts[7])),               # isND: 1=2D/3D discretization
-                "spd": bool(int(parts[8])),                 # posdef: 1=SPD, 0=not SPD
+                "posdef": bool(int(parts[8])),              # posdef: 1=positive definite, 0=not
                 "pattern_symmetry": float(parts[9]),        # Pattern symmetry (0-1)
                 "numerical_symmetry": float(parts[10]),     # Numerical symmetry (0-1)
                 "kind": parts[11] if len(parts) > 11 else "",
-                "nnz_with_explicit_zeros": int(parts[12])
+                "pattern_entries": int(parts[12])
                 if len(parts) > 12
-                else int(parts[4]),
+                else int(parts[4]),  # number of zero (and explicit zero) entries in the sparse matrix
             }
-            
+
             # Derive symmetric flag from numerical_symmetry
             # Consider matrices with >99% numerical symmetry as symmetric
             matrix_info["symmetric"] = matrix_info["numerical_symmetry"] >= 0.99
+
+            # Calculate SPD (Symmetric Positive Definite): symmetric AND positive definite AND real AND square
+            is_square = matrix_info["rows"] == matrix_info["cols"]
+            matrix_info["spd"] = (
+                matrix_info["symmetric"] and
+                matrix_info["posdef"] and
+                matrix_info["real"] and
+                is_square
+            )
 
             # Add derived fields for compatibility
             matrix_info.update(
@@ -177,7 +187,6 @@ class IndexManager:
                     "structure": "symmetric"
                     if matrix_info["symmetric"]
                     else "unsymmetric",
-                    "posdef": matrix_info["spd"],  # SPD implies positive definite
                 }
             )
 
