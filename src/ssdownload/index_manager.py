@@ -169,7 +169,7 @@ class IndexManager:
             # Derive symmetric flag from numerical_symmetry
             # Consider matrices with >99% numerical symmetry as symmetric
             numerical_sym_val = matrix_info["numerical_symmetry"]
-            if isinstance(numerical_sym_val, (int, float)):
+            if isinstance(numerical_sym_val, int | float):
                 matrix_info["symmetric"] = numerical_sym_val >= 0.99
             else:
                 matrix_info["symmetric"] = False
