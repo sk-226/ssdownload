@@ -1,5 +1,9 @@
 # Statistics computed for the SuiteSparse Matrix Collection
 
+[Statistics computed for the University of Florida Sparse Matrix Collection](https://www.cise.ufl.edu/research/sparse/matrices/stats.html)
+
+> **NOTE**: A CSV file is also available with some of this index information (UFstats.csv). The first line of the CSV file gives the number of matrices in the collection, and the second line gives the LastRevisionDate. Line k+2 in the file lists the following statistics for the matrix whose id number is k: Group, Name, nrows, ncols, nnz, isReal, isBinary, isND, posdef, pattern_symmetry, numerical_symmetry, and kind. 
+
 The index for the UF Collection contains a set of statistics about each matrix in the collection. A table of these statistics can be loaded into MATLAB via index=UFget, and by list=UFkinds. Below is a summary of what they are and how they are computed. The first two are for the whole collection, and the rest are statistics for each matrix.
 
 LastRevisionDate
