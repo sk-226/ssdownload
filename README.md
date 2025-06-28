@@ -47,26 +47,12 @@ uv tool upgrade ssdownload --reinstall   # Update wrapper only
 
 ### Basic Usage
 
-#### Using uv run (Development)
+> **Command Format**: Use `ssdl` directly if you've done global installation, otherwise add `uv run` prefix.
+
 ```bash
-# Download a matrix (auto-detects group)
-uv run ssdl download ct20stif
+# Get matrix information
+ssdl info ct20stif
 
-# Download in Matrix Market format
-uv run ssdl download ct20stif --format mm
-
-# Search matrices with filters
-uv run ssdl list --spd --size 1000:10000 --field real
-
-# Bulk download SPD matrices
-uv run ssdl bulk --spd --max-files 10
-
-# Bulk download real SPD matrices in size range
-uv run ssdl bulk --spd --field real --size 100:1000 --max-files 5
-```
-
-#### Using Global Installation
-```bash
 # Download a matrix (auto-detects group)
 ssdl download ct20stif
 
@@ -109,37 +95,6 @@ paths = await downloader.bulk_download(filter_obj, max_files=5)
 - **[Development](docs/DEVELOPMENT.md)** - Contributing and development setup
 - **[Troubleshooting](docs/TROUBLESHOOTING.md)** - Common issues and solutions
 
-## 🎯 Common Commands
-
-#### With uv run
-```bash
-# Get matrix information
-uv run ssdl info ct20stif
-
-# List matrices by group
-uv run ssdl list --group Boeing
-
-# Download with custom output directory
-uv run ssdl download ct20stif --output ./matrices
-
-# Search by name pattern
-uv run ssdl list --name "stif" --limit 5
-```
-
-#### With Global Installation
-```bash
-# Get matrix information
-ssdl info ct20stif
-
-# List matrices by group
-ssdl list --group Boeing
-
-# Download with custom output directory
-ssdl download ct20stif --output ./matrices
-
-# Search by name pattern
-ssdl list --name "stif" --limit 5
-```
 
 ## 🤝 Contributing
 
