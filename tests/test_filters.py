@@ -28,7 +28,7 @@ class TestFilter:
             "spd": True,
             "num_rows": 100,
             "num_cols": 100,
-            "name": "test"
+            "name": "test",
         }
         assert filter_obj.matches(spd_matrix)
 
@@ -42,7 +42,7 @@ class TestFilter:
             "spd": False,  # SPD requires symmetric, so this should be False
             "num_rows": 100,
             "num_cols": 100,
-            "name": "test"
+            "name": "test",
         }
         assert not filter_obj.matches(non_symmetric)
 
@@ -52,7 +52,7 @@ class TestFilter:
             "spd": False,  # SPD requires square matrix, so this should be False
             "num_rows": 100,
             "num_cols": 200,
-            "name": "test"
+            "name": "test",
         }
         assert not filter_obj.matches(non_square)
 

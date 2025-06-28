@@ -49,7 +49,6 @@ class TestCliUtils:
         assert result.spd is True
         assert result.posdef is None
 
-
     def test_build_filter_string_fields(self):
         """Test building filter with string fields."""
         result = build_filter(

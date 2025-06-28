@@ -18,10 +18,7 @@ class TestConfig:
             Config.FILES_BASE_URL
             == "https://suitesparse-collection-website.herokuapp.com"
         )
-        assert (
-            Config.CSV_INDEX_URL
-            == "https://sparse.tamu.edu/files/ssstats.csv"
-        )
+        assert Config.CSV_INDEX_URL == "https://sparse.tamu.edu/files/ssstats.csv"
         assert Config.CACHE_TTL == 3600
         assert Config.MAX_WORKERS == 8
         assert Config.DEFAULT_WORKERS == 4
@@ -125,7 +122,7 @@ class TestConfig:
         assert isinstance(cache_dir, Path)
 
         # Should contain 'ssdownload' in the path
-        assert 'ssdownload' in str(cache_dir)
+        assert "ssdownload" in str(cache_dir)
 
         # Should be an absolute path
         assert cache_dir.is_absolute()

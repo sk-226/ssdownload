@@ -95,6 +95,7 @@ class TestIndexManager:
 
         # Should use system default cache directory
         from ssdownload.config import Config
+
         expected_dir = Config.get_default_cache_dir()
         assert manager.cache_dir == expected_dir
         assert manager.cache_dir.exists()  # Should be created
@@ -112,8 +113,12 @@ class TestIndexManager:
         assert parsed[0]["name"] == "ct20stif"
         assert parsed[0]["rows"] == 52329
         assert parsed[0]["field"] == "real"
-        assert parsed[0]["structure"] == "symmetric"   # ct20stif has numerical_symmetry=1.0, so symmetric
-        assert parsed[1]["structure"] == "symmetric"   # bcsstk01 has numerical_symmetry=1.0, so symmetric
+        assert (
+            parsed[0]["structure"] == "symmetric"
+        )  # ct20stif has numerical_symmetry=1.0, so symmetric
+        assert (
+            parsed[1]["structure"] == "symmetric"
+        )  # bcsstk01 has numerical_symmetry=1.0, so symmetric
 
     def test_parse_csv_line_valid(self, temp_cache_dir):
         """Test parsing a valid CSV line."""
@@ -128,7 +133,9 @@ class TestIndexManager:
         assert result["rows"] == 52329
         assert result["real"] is True
         assert result["posdef"] is True
-        assert result["spd"] is True  # symmetric (numerical_symmetry=1.0) AND posdef AND real AND square
+        assert (
+            result["spd"] is True
+        )  # symmetric (numerical_symmetry=1.0) AND posdef AND real AND square
         assert result["field"] == "real"
 
     def test_parse_csv_line_invalid(self, temp_cache_dir):
