@@ -151,30 +151,35 @@ class IndexManager:
                 "rows": int(parts[2]),
                 "cols": int(parts[3]),
                 "nnz": int(parts[4]),
-                "real": bool(int(parts[5])),                # isReal: 1=real, 0=complex
-                "binary": bool(int(parts[6])),              # isBinary: 1=binary, 0=not
-                "complex": not bool(int(parts[5])),         # If not real, assume complex
-                "2d_3d": bool(int(parts[7])),               # isND: 1=2D/3D discretization
-                "posdef": bool(int(parts[8])),              # posdef: 1=positive definite, 0=not
-                "pattern_symmetry": float(parts[9]),        # Pattern symmetry (0-1)
-                "numerical_symmetry": float(parts[10]),     # Numerical symmetry (0-1)
+                "real": bool(int(parts[5])),  # isReal: 1=real, 0=complex
+                "binary": bool(int(parts[6])),  # isBinary: 1=binary, 0=not
+                "complex": not bool(int(parts[5])),  # If not real, assume complex
+                "2d_3d": bool(int(parts[7])),  # isND: 1=2D/3D discretization
+                "posdef": bool(int(parts[8])),  # posdef: 1=positive definite, 0=not
+                "pattern_symmetry": float(parts[9]),  # Pattern symmetry (0-1)
+                "numerical_symmetry": float(parts[10]),  # Numerical symmetry (0-1)
                 "kind": parts[11] if len(parts) > 11 else "",
                 "pattern_entries": int(parts[12])
                 if len(parts) > 12
-                else int(parts[4]),  # number of zero (and explicit zero) entries in the sparse matrix
+                else int(
+                    parts[4]
+                ),  # number of zero (and explicit zero) entries in the sparse matrix
             }
 
             # Derive symmetric flag from numerical_symmetry
             # Consider matrices with >99% numerical symmetry as symmetric
-            matrix_info["symmetric"] = matrix_info["numerical_symmetry"] >= 0.99
+            numerical_sym = matrix_info["numerical_symmetry"]
+            matrix_info["symmetric"] = (
+                isinstance(numerical_sym, int | float) and numerical_sym >= 0.99
+            )
 
             # Calculate SPD (Symmetric Positive Definite): symmetric AND positive definite AND real AND square
             is_square = matrix_info["rows"] == matrix_info["cols"]
             matrix_info["spd"] = (
-                matrix_info["symmetric"] and
-                matrix_info["posdef"] and
-                matrix_info["real"] and
-                is_square
+                matrix_info["symmetric"]
+                and matrix_info["posdef"]
+                and matrix_info["real"]
+                and is_square
             )
 
             # Add derived fields for compatibility

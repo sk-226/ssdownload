@@ -37,7 +37,7 @@ from .exceptions import ChecksumError
 class FileDownloader:
     """Handles file downloading with resume support and checksum verification."""
 
-    def __init__(self, verify_checksums: bool = True, timeout: float = None):
+    def __init__(self, verify_checksums: bool = True, timeout: float | None = None):
         """Initialize the file downloader.
 
         Args:
@@ -85,7 +85,9 @@ class FileDownloader:
                 # No checksum available, but file exists - assume it's valid
                 if progress and task_id:
                     progress.update(
-                        task_id, completed=100, description=f"✓ {output_path.name} (existing)"
+                        task_id,
+                        completed=100,
+                        description=f"✓ {output_path.name} (existing)",
                     )
                 return True
 
@@ -93,6 +95,7 @@ class FileDownloader:
         # Only clean up old, likely stale files to prevent interference with tests
         if temp_path.exists():
             import time
+
             temp_stat = temp_path.stat()
             temp_age = time.time() - temp_stat.st_mtime
             # Remove only if file is older than 1 hour (not affecting test files)

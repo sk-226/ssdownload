@@ -53,7 +53,7 @@ class Config:
     USER_AGENT: str = "ssdownload/0.1.0 (Python SuiteSparse downloader)"
 
     @classmethod
-    def get_http_client_config(cls, timeout: float = None) -> dict[str, Any]:
+    def get_http_client_config(cls, timeout: float | None = None) -> dict[str, Any]:
         """Get HTTP client configuration for httpx.AsyncClient.
 
         Args:
