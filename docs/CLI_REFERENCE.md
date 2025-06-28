@@ -12,6 +12,7 @@ Complete command-line interface reference for the SuiteSparse Matrix Collection 
 | `ssdl list` | Search and list matrices |
 | `ssdl info` | Get detailed matrix information |
 | `ssdl groups` | List all available matrix groups |
+| `ssdl clean-cache` | Clear system cache (matrix index cache) |
 
 ## Global Options
 
@@ -285,3 +286,44 @@ ssdl list --group Boeing --limit 5 | while read line; do
     ssdl download "$matrix_name"
 done
 ```
+
+## Cache Management
+
+### `ssdl clean-cache`
+
+Clear the system cache (matrix index cache) to force fresh data download.
+
+```bash
+ssdl clean-cache [OPTIONS]
+```
+
+**Options:**
+- `--yes, -y` - Skip confirmation prompt (useful for automated scripts)
+
+**Description:**
+The `clean-cache` command removes the matrix index cache file (`ssstats_cache.json`) from the system cache directory. This forces the next matrix operation to download fresh index data from the SuiteSparse server.
+
+The cache is stored in OS-appropriate locations:
+- **Linux/macOS**: `~/.cache/ssdownload/`
+- **Windows**: `%LOCALAPPDATA%\ssdownload\cache\`
+- **Custom**: Set `SSDOWNLOAD_CACHE_DIR` environment variable
+
+**Examples:**
+```bash
+# Clear cache with confirmation prompt
+ssdl clean-cache
+
+# Clear cache automatically (no prompt)
+ssdl clean-cache --yes
+
+# Use in scripts
+if [ "$FORCE_REFRESH" = "true" ]; then
+    ssdl clean-cache --yes
+fi
+```
+
+**When to use:**
+- After SuiteSparse releases new matrices
+- When experiencing data inconsistencies
+- Before important operations requiring latest data
+- In automated workflows to ensure fresh data

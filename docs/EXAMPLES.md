@@ -506,3 +506,105 @@ async def create_matrix_dataset():
 # Run the pipeline
 df = asyncio.run(create_matrix_dataset())
 ```
+
+## Cache Management Examples
+
+### Clearing System Cache
+
+```bash
+# Clear cache with confirmation
+uv run ssdl clean-cache
+
+# Clear cache automatically (useful for scripts)
+uv run ssdl clean-cache --yes
+```
+
+### Automation Scripts with Cache Management
+
+```bash
+#!/bin/bash
+# Script to ensure fresh data for important downloads
+
+echo "Ensuring fresh matrix data..."
+uv run ssdl clean-cache --yes
+
+echo "Downloading latest Boeing matrices..."
+uv run ssdl bulk --group Boeing --max-files 5
+
+echo "Getting fresh matrix information..."
+uv run ssdl info ct20stif
+```
+
+### Periodic Cache Refresh
+
+```bash
+#!/bin/bash
+# Weekly cache refresh script for cron
+
+CACHE_AGE_DAYS=7
+CACHE_DIR=$(python3 -c "
+from ssdownload.config import Config
+import time
+import os
+cache_file = Config.get_default_cache_dir() / 'ssstats_cache.json'
+if cache_file.exists():
+    age_days = (time.time() - cache_file.stat().st_mtime) / 86400
+    print(int(age_days))
+else:
+    print(999)
+")
+
+if [ "$CACHE_AGE_DAYS" -gt 7 ]; then
+    echo "Cache is older than 7 days, refreshing..."
+    uv run ssdl clean-cache --yes
+    echo "Cache refreshed"
+else
+    echo "Cache is fresh (${CACHE_AGE_DAYS} days old)"
+fi
+```
+
+### Python Integration with Cache Management
+
+```python
+import subprocess
+import os
+from pathlib import Path
+
+def ensure_fresh_cache():
+    """Clear cache and ensure fresh data for analysis."""
+    try:
+        # Clear the cache
+        result = subprocess.run(['uv', 'run', 'ssdl', 'clean-cache', '--yes'], 
+                              capture_output=True, text=True)
+        if result.returncode == 0:
+            print("✓ Cache cleared successfully")
+        else:
+            print(f"Cache clear failed: {result.stderr}")
+    except Exception as e:
+        print(f"Error clearing cache: {e}")
+
+def download_with_fresh_data(matrix_name):
+    """Download matrix with guaranteed fresh index data."""
+    ensure_fresh_cache()
+    
+    # Now download the matrix
+    result = subprocess.run(['uv', 'run', 'ssdl', 'download', matrix_name], 
+                          capture_output=True, text=True)
+    if result.returncode == 0:
+        print(f"✓ Downloaded {matrix_name}")
+        return True
+    else:
+        print(f"✗ Failed to download {matrix_name}: {result.stderr}")
+        return False
+
+# Example usage
+if __name__ == "__main__":
+    # Download critical matrices with fresh data
+    critical_matrices = ['ct20stif', 'nos5', 'bcsstk14']
+    
+    for matrix in critical_matrices:
+        success = download_with_fresh_data(matrix)
+        if not success:
+            print(f"Critical matrix {matrix} failed to download!")
+            break
+```
