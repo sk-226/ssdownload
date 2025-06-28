@@ -131,6 +131,7 @@ class TestConfig:
         """Test cache directory override via environment variable."""
         # Test with environment variable override using a cross-platform temp directory
         import tempfile
+
         with tempfile.TemporaryDirectory() as temp_dir:
             test_cache_dir = str(Path(temp_dir) / "test_ssdownload_cache")
             original_env = os.environ.get("SSDOWNLOAD_CACHE_DIR")
