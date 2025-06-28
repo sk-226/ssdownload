@@ -28,6 +28,27 @@ uv sync
 uv run ssdl --help
 ```
 
+#### Global Installation with uv tool
+
+For convenient CLI usage without the `uv run` prefix:
+
+```bash
+# From project root directory
+uv tool install .          # Install globally
+uv tool update-shell       # Update PATH (first time only)
+
+# Verify global installation
+ssdl --help
+
+# After code changes (development)
+uv tool upgrade ssdownload --reinstall   # Update wrapper
+```
+
+**Benefits:**
+- No need to type `uv run` prefix
+- Works from any directory
+- Better user experience for frequent CLI usage
+
 ### Option 2: Using pip
 
 ```bash
@@ -62,10 +83,10 @@ pip install ssdownload[dev]
 
 ### Environment Variables
 
-Set `SSDL_CACHE_DIR` to change the default cache directory:
+Set `SSDOWNLOAD_CACHE_DIR` to change the default cache directory:
 
 ```bash
-export SSDL_CACHE_DIR=/path/to/cache
+export SSDOWNLOAD_CACHE_DIR=/path/to/cache
 ```
 
 ### Cache Directory
@@ -77,7 +98,7 @@ By default, matrices are downloaded to the current working directory. You can sp
 ssdl download ct20stif --output ./my_matrices
 
 # Environment variable: applies to all commands
-export SSDL_CACHE_DIR=./my_matrices
+export SSDOWNLOAD_CACHE_DIR=./my_matrices
 ssdl download ct20stif
 ```
 
@@ -85,15 +106,28 @@ ssdl download ct20stif
 
 Test your installation with these commands:
 
+### With uv run (Development)
 ```bash
 # Check CLI is working
-uv run ssdl --help  # or just `ssdl --help` with pip
+uv run ssdl --help
 
 # Test basic functionality
 uv run ssdl groups  # List available matrix groups
 
 # Test download (small file)
 uv run ssdl info ct20stif  # Get matrix information
+```
+
+### With Global Installation
+```bash
+# Check CLI is working
+ssdl --help
+
+# Test basic functionality
+ssdl groups  # List available matrix groups
+
+# Test download (small file)
+ssdl info ct20stif  # Get matrix information
 ```
 
 ## Development Setup

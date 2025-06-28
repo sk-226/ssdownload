@@ -2,10 +2,38 @@
 
 Comprehensive examples for using the SuiteSparse Matrix Collection Downloader.
 
+## Command Format Note
+
+Examples are shown in both formats:
+- **Global installation** (recommended): `ssdl command`
+- **Development with uv**: `uv run ssdl command`
+
+Choose the format that matches your installation method.
+
 ## Basic CLI Examples
 
 ### Single Matrix Downloads
 
+#### Global Installation
+```bash
+# Download by name (auto-detects group)
+ssdl download ct20stif
+
+# Download specific format
+ssdl download ct20stif --format mm
+
+# Specify group explicitly
+ssdl download Boeing/ct20stif
+ssdl download ct20stif --group Boeing
+
+# Custom output directory
+ssdl download ct20stif --output ./my_matrices
+
+# Download with checksum verification
+ssdl download ct20stif --verify
+```
+
+#### Development with uv
 ```bash
 # Download by name (auto-detects group)
 uv run ssdl download ct20stif
@@ -26,6 +54,25 @@ uv run ssdl download ct20stif --verify
 
 ### Matrix Information and Search
 
+#### Global Installation
+```bash
+# Get matrix details
+ssdl info ct20stif
+
+# List matrices from specific group
+ssdl list --group Boeing --limit 10
+
+# Search by size
+ssdl list --size 1000:10000 --limit 5
+
+# Search SPD matrices
+ssdl list --spd --field real --verbose
+
+# Search by name pattern
+ssdl list --name "stif" --limit 3
+```
+
+#### Development with uv
 ```bash
 # Get matrix details
 uv run ssdl info ct20stif
@@ -45,6 +92,22 @@ uv run ssdl list --name "stif" --limit 3
 
 ### Bulk Downloads
 
+#### Global Installation
+```bash
+# Download SPD matrices
+ssdl bulk --spd --max-files 5
+
+# Download by size range in Matrix Market format
+ssdl bulk --size 1000:5000 --format mm --max-files 10
+
+# Download from multiple groups
+ssdl bulk --group "Boeing" --group "HB" --max-files 15
+
+# Complex filter: real-valued, medium-sized, sparse
+ssdl bulk --field real --size 5000:50000 --nnz :100000 --max-files 20
+```
+
+#### Development with uv
 ```bash
 # Download SPD matrices
 uv run ssdl bulk --spd --max-files 5

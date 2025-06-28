@@ -2,6 +2,15 @@
 
 Complete command-line interface reference for the SuiteSparse Matrix Collection Downloader.
 
+## Command Usage
+
+This reference shows commands using the global installation format (`ssdl`). If you're using development installation with uv, prefix all commands with `uv run`:
+
+- **Global installation**: `ssdl download ct20stif`
+- **Development with uv**: `uv run ssdl download ct20stif`
+
+See [Installation Guide](INSTALLATION.md) for setup instructions.
+
 ## Commands Overview
 
 | Command | Description |
@@ -211,10 +220,10 @@ ssdl list --size 1e4:1e5
 
 ## Environment Variables
 
-- `SSDL_CACHE_DIR` - Default cache directory for downloads
+- `SSDOWNLOAD_CACHE_DIR` - Default cache directory for downloads
 
 ```bash
-export SSDL_CACHE_DIR=/path/to/cache
+export SSDOWNLOAD_CACHE_DIR=/path/to/cache
 ssdl download ct20stif  # Downloads to /path/to/cache
 ```
 
