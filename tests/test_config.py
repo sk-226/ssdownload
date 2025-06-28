@@ -136,7 +136,8 @@ class TestConfig:
         try:
             os.environ["SSDOWNLOAD_CACHE_DIR"] = test_cache_dir
             cache_dir = Config.get_default_cache_dir()
-            assert str(cache_dir) == test_cache_dir
+            # Convert both to Path objects to handle cross-platform path separators
+            assert Path(str(cache_dir)) == Path(test_cache_dir)
         finally:
             # Restore original environment
             if original_env is not None:
