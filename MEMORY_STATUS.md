@@ -15,7 +15,7 @@
 
 ### 🗂️ Key Files Identified
 - `src/ssdownload/config.py` - URL configurations
-- `src/ssdownload/index_manager.py` - CSV data processing  
+- `src/ssdownload/index_manager.py` - CSV data processing
 - `src/ssdownload/downloader.py` - File download logic
 - `src/ssdownload/filters.py` - --spd filtering logic
 - `src/ssdownload/cli_utils.py` - CLI option parsing
@@ -65,7 +65,7 @@ SPD filter logic: src/ssdownload/filters.py + cli_utils.py
 # Test correct CSV source
 uv run ssdl info nos5
 
-# Test SPD filtering  
+# Test SPD filtering
 uv run ssdl list --spd --limit 5
 
 # Test PART file cleanup
@@ -87,7 +87,7 @@ uv run ssdl download ct20stif  # Should not create .part debris
 
 ### 🔍 Testing Strategy
 After each fix:
-1. Test with known matrix (nos5) 
+1. Test with known matrix (nos5)
 2. Verify no .part files left behind
 3. Confirm --spd returns only SPD matrices
 4. Update CHANGELOG.md with changes
@@ -106,7 +106,7 @@ After each fix:
 - Difficulty focusing on current task
 
 ### Restart Protocol
-1. Say "CLEAR_MEMORY_CHECKPOINT" 
+1. Say "CLEAR_MEMORY_CHECKPOINT"
 2. I'll read TODO.md and MEMORY_STATUS.md
 3. Continue from where we left off
 4. Update progress in MEMORY_STATUS.md

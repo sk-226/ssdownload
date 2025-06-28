@@ -173,7 +173,7 @@ from ssdownload import SuiteSparseDownloader
 downloader = SuiteSparseDownloader(
     cache_dir="./matrices",     # Custom cache directory
     workers=8,                  # Max concurrent downloads
-    timeout=120.0,              # HTTP timeout in seconds  
+    timeout=120.0,              # HTTP timeout in seconds
     verify_checksums=True       # Enable MD5 verification
 )
 ```

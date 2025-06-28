@@ -104,7 +104,7 @@ A future detailed command should provide comprehensive information organized by 
 - Explicit zeros count (when available)
 - Diagonal nonzeros (when available)
 
-#### Section 2: Mathematical Properties  
+#### Section 2: Mathematical Properties
 - Field type and numerical properties
 - Symmetry analysis (pattern and numerical)
 - SPD classification

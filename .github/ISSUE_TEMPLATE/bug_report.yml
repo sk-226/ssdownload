@@ -7,7 +7,7 @@ body:
     attributes:
       value: |
         Thanks for taking the time to fill out this bug report! 🐛
-        
+
         Before submitting, please check if your issue has already been reported.
 
   - type: textarea
@@ -28,9 +28,9 @@ body:
         1. Run command `ssdl ...`
         2. See error
       value: |
-        1. 
-        2. 
-        3. 
+        1.
+        2.
+        3.
     validations:
       required: true
 

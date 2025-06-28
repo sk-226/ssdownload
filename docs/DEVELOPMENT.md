@@ -216,11 +216,11 @@ class TestSuiteSparseDownloader:
     @pytest.fixture
     def downloader(self):
         return SuiteSparseDownloader(cache_dir="./test_cache")
-    
+
     async def test_download_by_name(self, downloader):
         # Test implementation
         pass
-    
+
     @pytest.mark.slow
     async def test_real_download(self, downloader):
         # Network-dependent test
@@ -238,7 +238,7 @@ async def test_download_with_mock(self, mock_client):
     mock_response.status_code = 200
     mock_response.content = b"test data"
     mock_client.return_value.__aenter__.return_value.get.return_value = mock_response
-    
+
     # Test with mocked HTTP client
 ```
 
@@ -320,7 +320,7 @@ class TestNewProperty:
     def test_filter_with_new_property(self):
         filter_obj = Filter(new_property=True)
         # Test filtering logic
-        
+
     async def test_cli_new_property(self):
         # Test CLI integration
 ```

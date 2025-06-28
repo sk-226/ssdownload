@@ -106,4 +106,5 @@ dev-dependencies = [
     "pytest-httpx>=0.35.0",
     "mypy>=1.0.0",
     "pytest-cov>=4.0.0",
+    "pre-commit>=4.2.0",
 ]

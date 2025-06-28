@@ -12,7 +12,7 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
-    
+
     steps:
     - uses: actions/checkout@v4
       with:
@@ -68,7 +68,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       release-notes: ${{ steps.extract.outputs.release-notes }}
-    
+
     steps:
     - uses: actions/checkout@v4
 
@@ -76,15 +76,15 @@ jobs:
       id: extract
       run: |
         VERSION=${GITHUB_REF#refs/tags/v}
-        
+
         # Extract changelog section for this version
         awk "/^## \[${VERSION}\]/ { flag=1; next } /^## \[/ { if(flag) exit } flag" CHANGELOG.md > release_notes.md
-        
+
         # If no specific version section found, extract from [Unreleased]
         if [ ! -s release_notes.md ]; then
           awk '/^## \[Unreleased\]/ { flag=1; next } /^## \[/ { if(flag) exit } flag' CHANGELOG.md > release_notes.md
         fi
-        
+
         # Read the content and set as output
         RELEASE_NOTES=$(cat release_notes.md)
         echo "release-notes<<EOF" >> $GITHUB_OUTPUT
@@ -95,7 +95,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [build]
     environment: release
-    
+
     steps:
     - name: Download build artifacts
       uses: actions/download-artifact@v4
@@ -111,7 +111,7 @@ jobs:
   create-release:
     runs-on: ubuntu-latest
     needs: [build, extract-changelog, publish-pypi]
-    
+
     steps:
     - uses: actions/checkout@v4
 
@@ -128,23 +128,23 @@ jobs:
         name: Release ${{ github.ref_name }}
         body: |
           ## Release ${{ github.ref_name }}
-          
+
           ${{ needs.extract-changelog.outputs.release-notes }}
-          
+
           ## Installation
-          
+
           ```bash
           pip install ssdownload==${{ github.ref_name }}
           ```
-          
+
           or
-          
+
           ```bash
           uv add ssdownload==${{ github.ref_name }}
           ```
-          
+
           ---
-          
+
           🤖 This release was automatically created by GitHub Actions.
         files: |
           dist/*.whl
@@ -156,7 +156,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [publish-pypi, create-release]
     if: success()
-    
+
     steps:
     - name: Release success notification
       run: |
@@ -168,7 +168,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [build, extract-changelog, publish-pypi, create-release]
     if: failure()
-    
+
     steps:
     - name: Release failure notification
       run: |
