@@ -1,11 +1,11 @@
 """Integration tests for SuiteSparse Matrix Collection Downloader Python API."""
 
-import tempfile
 from pathlib import Path
 
 import pytest
 
-from ssdownload import SuiteSparseDownloader, Filter
+from ssdownload import Filter, SuiteSparseDownloader
+from ssdownload.exceptions import MatrixNotFoundError
 
 
 class TestAPIIntegration:
@@ -29,10 +29,7 @@ class TestAPIIntegration:
 
         # Test with custom settings
         downloader_custom = SuiteSparseDownloader(
-            cache_dir=test_output_dir,
-            workers=2,
-            timeout=60.0,
-            verify_checksums=True
+            cache_dir=test_output_dir, workers=2, timeout=60.0, verify_checksums=True
         )
         assert downloader_custom.cache_dir == test_output_dir
         assert downloader_custom.workers == 2
@@ -53,12 +50,10 @@ class TestAPIIntegration:
         matrices = await downloader.find_matrices(filter_obj)
         assert len(matrices) > 0
         assert all(
-            matrix.get("num_rows", matrix.get("rows", 0)) <= 1000
-            for matrix in matrices
+            matrix.get("num_rows", matrix.get("rows", 0)) <= 1000 for matrix in matrices
         )
         assert all(
-            matrix.get("num_cols", matrix.get("cols", 0)) <= 1000
-            for matrix in matrices
+            matrix.get("num_cols", matrix.get("cols", 0)) <= 1000 for matrix in matrices
         )
 
         # Test limited results
@@ -84,7 +79,7 @@ class TestAPIIntegration:
         # Get available groups
         groups = await downloader._get_available_groups()
         assert len(groups) > 0
-        assert isinstance(groups, (set, list))
+        assert isinstance(groups, set | list)
 
         # Test finding a specific matrix by name
         if "HB" in groups:
@@ -157,7 +152,7 @@ class TestAPIIntegration:
 
         if matrices:
             matrix = matrices[0]
-            
+
             # Verify required fields exist
             assert "group" in matrix
             assert "name" in matrix
@@ -214,11 +209,13 @@ class TestAPIIntegration:
         downloader = SuiteSparseDownloader()
 
         # Test with non-existent matrix name
-        with pytest.raises(Exception):  # Should raise MatrixNotFoundError
+        with pytest.raises(MatrixNotFoundError):
             await downloader.download_by_name("definitely_nonexistent_matrix_12345")
 
         # Test invalid group in find_matrix_group
-        result = await downloader.index_manager.find_matrix_group("nonexistent_matrix_name")
+        result = await downloader.index_manager.find_matrix_group(
+            "nonexistent_matrix_name"
+        )
         assert result is None
 
 
@@ -231,12 +228,11 @@ class TestAPIPerformance:
         downloader = SuiteSparseDownloader()
 
         # First call should fetch index
-        start_time = pytest.approx(0, abs=1e-3)
         matrices1 = await downloader.find_matrices(Filter(n_rows=(None, 50)))
-        
+
         # Second call should use cached index (should be faster)
         matrices2 = await downloader.find_matrices(Filter(n_rows=(None, 60)))
-        
+
         # Results should be consistent
         assert len(matrices1) > 0
         assert len(matrices2) >= len(matrices1)  # More inclusive filter
@@ -249,7 +245,7 @@ class TestAPIPerformance:
         # Multiple calls should return consistent results
         groups1 = await downloader._get_available_groups()
         groups2 = await downloader._get_available_groups()
-        
+
         assert groups1 == groups2
         assert len(groups1) > 100  # Should have many groups
 
@@ -271,13 +267,13 @@ class TestAPIRealDownload:
         downloader = SuiteSparseDownloader(
             cache_dir=download_dir,
             workers=1,
-            verify_checksums=False  # Disable to avoid potential issues
+            verify_checksums=False,  # Disable to avoid potential issues
         )
 
         # Find the smallest available matrix
         filter_obj = Filter(n_rows=(None, 50), n_cols=(None, 50))
         matrices = await downloader.find_matrices(filter_obj)
-        
+
         if not matrices:
             pytest.skip("No small matrices available for download test")
 
@@ -285,9 +281,9 @@ class TestAPIRealDownload:
         matrix = min(
             matrices,
             key=lambda m: (
-                m.get("num_rows", m.get("rows", 999)) *
-                m.get("num_cols", m.get("cols", 999))
-            )
+                m.get("num_rows", m.get("rows", 999))
+                * m.get("num_cols", m.get("cols", 999))
+            ),
         )
 
         group = matrix.get("group")
@@ -309,18 +305,16 @@ class TestAPIRealDownload:
     async def test_real_bulk_download(self, download_dir):
         """Test bulk downloading of very small matrices."""
         downloader = SuiteSparseDownloader(
-            cache_dir=download_dir / "bulk",
-            workers=2,
-            verify_checksums=False
+            cache_dir=download_dir / "bulk", workers=2, verify_checksums=False
         )
 
         # Find very small matrices for bulk download
         filter_obj = Filter(n_rows=(None, 30), n_cols=(None, 30))
-        
+
         downloaded_paths = await downloader.bulk_download(
             filter_obj=filter_obj,
             format_type="mat",
-            max_files=2  # Download only 2 files
+            max_files=2,  # Download only 2 files
         )
 
         assert len(downloaded_paths) <= 2
@@ -335,14 +329,13 @@ class TestAPIRealDownload:
     async def test_download_different_formats(self, download_dir):
         """Test downloading the same matrix in different formats."""
         downloader = SuiteSparseDownloader(
-            cache_dir=download_dir / "formats",
-            verify_checksums=False
+            cache_dir=download_dir / "formats", verify_checksums=False
         )
 
         # Find one small matrix
         filter_obj = Filter(n_rows=(None, 40), n_cols=(None, 40))
         matrices = await downloader.find_matrices(filter_obj)
-        
+
         if not matrices:
             pytest.skip("No matrices available for format test")
 

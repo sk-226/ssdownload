@@ -1,5 +1,7 @@
 """CLI utility functions for SuiteSparse downloader."""
 
+from typing import Any
+
 from .filters import Filter
 
 
@@ -30,7 +32,7 @@ def build_filter(
     structure: str | None = None,
 ) -> Filter | None:
     """Build a Filter object from CLI arguments."""
-    filter_kwargs = {}
+    filter_kwargs: dict[str, Any] = {}
 
     if spd:
         filter_kwargs["spd"] = True

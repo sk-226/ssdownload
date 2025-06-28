@@ -41,9 +41,18 @@ class Filter:
         Returns:
             True if matrix matches all filter criteria
         """
-        # Check SPD flag
-        if self.spd is not None and matrix_info.get("spd") != self.spd:
-            return False
+        # Check SPD (Symmetric Positive Definite) - must be symmetric AND positive definite AND real
+        if self.spd is not None:
+            if self.spd:
+                # When SPD is required, use the calculated SPD flag
+                spd_flag = matrix_info.get("spd", False)
+                if not spd_flag:
+                    return False
+            else:
+                # When SPD is explicitly False, exclude SPD matrices
+                spd_flag = matrix_info.get("spd", False)
+                if spd_flag:
+                    return False
 
         # Check positive definite flag
         if self.posdef is not None and matrix_info.get("posdef") != self.posdef:
@@ -128,7 +137,7 @@ class Filter:
 
     def to_dict(self) -> dict[str, Any]:
         """Convert filter to dictionary representation."""
-        result = {}
+        result: dict[str, Any] = {}
 
         if self.spd is not None:
             result["spd"] = self.spd

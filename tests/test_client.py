@@ -16,8 +16,8 @@ def sample_csv_content():
     """Sample CSV content from SuiteSparse."""
     return """2
 2023-12-01
-Boeing,ct20stif,52329,52329,1566095,1,0,0,1,1,0,,1566095
-HB,bcsstk01,48,48,224,1,0,0,1,1,0,,224"""
+Boeing,ct20stif,52329,52329,1566095,1,0,0,1,0.5,1.0,structural problem,2698463
+HB,bcsstk01,48,48,224,1,0,0,1,1.0,1.0,structural problem,224"""
 
 
 @pytest.fixture
@@ -36,8 +36,8 @@ def sample_matrices():
             "2d_3d": False,
             "symmetric": True,
             "spd": True,
-            "kind": "",
-            "nnz_with_explicit_zeros": 1566095,
+            "kind": "structural problem",
+            "pattern_entries": 2698463,
             "num_rows": 52329,
             "num_cols": 52329,
             "nonzeros": 1566095,
@@ -57,8 +57,8 @@ def sample_matrices():
             "2d_3d": False,
             "symmetric": True,
             "spd": True,
-            "kind": "",
-            "nnz_with_explicit_zeros": 224,
+            "kind": "structural problem",
+            "pattern_entries": 224,
             "num_rows": 48,
             "num_cols": 48,
             "nonzeros": 224,

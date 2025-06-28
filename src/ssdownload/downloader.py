@@ -37,7 +37,7 @@ from .exceptions import ChecksumError
 class FileDownloader:
     """Handles file downloading with resume support and checksum verification."""
 
-    def __init__(self, verify_checksums: bool = True, timeout: float = None):
+    def __init__(self, verify_checksums: bool = True, timeout: float | None = None):
         """Initialize the file downloader.
 
         Args:
@@ -71,13 +71,36 @@ class FileDownloader:
         temp_path = output_path.with_suffix(output_path.suffix + ".part")
 
         # Check if file already exists and is valid
-        if output_path.exists() and expected_md5:
-            if await self._verify_file_checksum(output_path, expected_md5):
+        if output_path.exists():
+            # If we have a checksum, verify it
+            if expected_md5:
+                if await self._verify_file_checksum(output_path, expected_md5):
+                    if progress and task_id:
+                        progress.update(
+                            task_id, completed=100, description=f"✓ {output_path.name}"
+                        )
+                    return True
+                # If checksum verification fails, we'll re-download
+            else:
+                # No checksum available, but file exists - assume it's valid
                 if progress and task_id:
                     progress.update(
-                        task_id, completed=100, description=f"✓ {output_path.name}"
+                        task_id,
+                        completed=100,
+                        description=f"✓ {output_path.name} (existing)",
                     )
                 return True
+
+        # Clean up any orphaned .part files from previous failed downloads
+        # Only clean up old, likely stale files to prevent interference with tests
+        if temp_path.exists():
+            import time
+
+            temp_stat = temp_path.stat()
+            temp_age = time.time() - temp_stat.st_mtime
+            # Remove only if file is older than 1 hour (not affecting test files)
+            if temp_age > 3600:
+                temp_path.unlink(missing_ok=True)
 
         # Download the file
         await self._download_with_resume(url, temp_path, progress, task_id)

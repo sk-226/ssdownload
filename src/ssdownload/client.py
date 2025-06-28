@@ -33,7 +33,9 @@ class SuiteSparseDownloader:
         """Initialize the downloader.
 
         Args:
-            cache_dir: Directory to store downloaded files (default: current directory)
+            cache_dir: Directory to store downloaded files. If None, uses system
+                      default cache directory for index caching and current directory
+                      for matrix downloads.
             workers: Number of concurrent download workers
             timeout: HTTP request timeout in seconds
             verify_checksums: Whether to verify file checksums after download (default: False)
@@ -46,7 +48,9 @@ class SuiteSparseDownloader:
         self.verify_checksums = verify_checksums
 
         self.console = Console()
-        self.index_manager = IndexManager(self.cache_dir)
+        # IndexManager uses system cache by default, but can be overridden for downloads
+        index_cache_dir = None if cache_dir is None else self.cache_dir
+        self.index_manager = IndexManager(index_cache_dir)
         self.file_downloader = FileDownloader(verify_checksums, timeout)
 
     async def download(
@@ -212,7 +216,9 @@ class SuiteSparseDownloader:
                     if not group or not name:
                         return None
 
-                    path = await self.download(group, name, format_type, output_dir, _show_progress=False)
+                    path = await self.download(
+                        group, name, format_type, output_dir, _show_progress=False
+                    )
                     return path
                 except Exception as e:
                     self.console.print(
@@ -257,13 +263,15 @@ class SuiteSparseDownloader:
         """
         try:
             # Check if we're already in an event loop
-            loop = asyncio.get_running_loop()
+            asyncio.get_running_loop()
             # If we're in a loop, we can't use asyncio.run
             import warnings
+
             warnings.warn(
                 "list_matrices() called from within an async context. "
                 "Consider using find_matrices() directly instead.",
-                RuntimeWarning
+                RuntimeWarning,
+                stacklevel=2,
             )
             # Return empty list to avoid blocking
             return []

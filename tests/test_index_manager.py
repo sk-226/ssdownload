@@ -24,8 +24,8 @@ def sample_csv_content():
     """Sample CSV content from SuiteSparse."""
     return """2
 2023-12-01
-Boeing,ct20stif,52329,52329,1566095,1,0,0,1,1,0,,1566095
-HB,bcsstk01,48,48,224,1,0,0,1,1,0,,224"""
+Boeing,ct20stif,52329,52329,1566095,1,0,0,1,0.5,1.0,structural problem,2698463
+HB,bcsstk01,48,48,224,1,0,0,1,1.0,1.0,structural problem,224"""
 
 
 @pytest.fixture
@@ -44,8 +44,8 @@ def expected_parsed_data():
             "2d_3d": False,
             "symmetric": True,
             "spd": True,
-            "kind": "",
-            "nnz_with_explicit_zeros": 1566095,
+            "kind": "structural problem",
+            "pattern_entries": 2698463,
             "num_rows": 52329,
             "num_cols": 52329,
             "nonzeros": 1566095,
@@ -65,8 +65,8 @@ def expected_parsed_data():
             "2d_3d": False,
             "symmetric": True,
             "spd": True,
-            "kind": "",
-            "nnz_with_explicit_zeros": 224,
+            "kind": "structural problem",
+            "pattern_entries": 224,
             "num_rows": 48,
             "num_cols": 48,
             "nonzeros": 224,
@@ -89,6 +89,17 @@ class TestIndexManager:
         assert manager._csv_index_cache_time == 0
         assert manager._groups_cache is None
 
+    def test_init_default_cache_dir(self):
+        """Test IndexManager initialization with default cache directory."""
+        manager = IndexManager()
+
+        # Should use system default cache directory
+        from ssdownload.config import Config
+
+        expected_dir = Config.get_default_cache_dir()
+        assert manager.cache_dir == expected_dir
+        assert manager.cache_dir.exists()  # Should be created
+
     def test_parse_csv_content(
         self, temp_cache_dir, sample_csv_content, expected_parsed_data
     ):
@@ -102,13 +113,18 @@ class TestIndexManager:
         assert parsed[0]["name"] == "ct20stif"
         assert parsed[0]["rows"] == 52329
         assert parsed[0]["field"] == "real"
-        assert parsed[0]["structure"] == "symmetric"
+        assert (
+            parsed[0]["structure"] == "symmetric"
+        )  # ct20stif has numerical_symmetry=1.0, so symmetric
+        assert (
+            parsed[1]["structure"] == "symmetric"
+        )  # bcsstk01 has numerical_symmetry=1.0, so symmetric
 
     def test_parse_csv_line_valid(self, temp_cache_dir):
         """Test parsing a valid CSV line."""
         manager = IndexManager(temp_cache_dir)
 
-        line = "Boeing,ct20stif,52329,52329,1566095,1,0,0,1,1,0,,1566095"
+        line = "Boeing,ct20stif,52329,52329,1566095,1,0,0,1,0.5,1.0,structural problem,2698463"
         result = manager._parse_csv_line(line)
 
         assert result is not None
@@ -116,7 +132,10 @@ class TestIndexManager:
         assert result["name"] == "ct20stif"
         assert result["rows"] == 52329
         assert result["real"] is True
-        assert result["spd"] is True
+        assert result["posdef"] is True
+        assert (
+            result["spd"] is True
+        )  # symmetric (numerical_symmetry=1.0) AND posdef AND real AND square
         assert result["field"] == "real"
 
     def test_parse_csv_line_invalid(self, temp_cache_dir):
