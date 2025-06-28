@@ -129,17 +129,19 @@ class TestConfig:
 
     def test_get_default_cache_dir_with_env_override(self):
         """Test cache directory override via environment variable."""
-        # Test with environment variable override
-        test_cache_dir = "/tmp/test_ssdownload_cache"
-        original_env = os.environ.get("SSDOWNLOAD_CACHE_DIR")
+        # Test with environment variable override using a cross-platform temp directory
+        import tempfile
+        with tempfile.TemporaryDirectory() as temp_dir:
+            test_cache_dir = str(Path(temp_dir) / "test_ssdownload_cache")
+            original_env = os.environ.get("SSDOWNLOAD_CACHE_DIR")
 
-        try:
-            os.environ["SSDOWNLOAD_CACHE_DIR"] = test_cache_dir
-            cache_dir = Config.get_default_cache_dir()
-            assert str(cache_dir) == test_cache_dir
-        finally:
-            # Restore original environment
-            if original_env is not None:
-                os.environ["SSDOWNLOAD_CACHE_DIR"] = original_env
-            else:
-                os.environ.pop("SSDOWNLOAD_CACHE_DIR", None)
+            try:
+                os.environ["SSDOWNLOAD_CACHE_DIR"] = test_cache_dir
+                cache_dir = Config.get_default_cache_dir()
+                assert str(cache_dir) == test_cache_dir
+            finally:
+                # Restore original environment
+                if original_env is not None:
+                    os.environ["SSDOWNLOAD_CACHE_DIR"] = original_env
+                else:
+                    os.environ.pop("SSDOWNLOAD_CACHE_DIR", None)
