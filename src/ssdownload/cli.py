@@ -24,7 +24,10 @@ console = Console()
 def download(
     identifier: str = typer.Argument(..., help="Matrix name or group/name"),
     group: str | None = typer.Option(
-        None, "--group", "-g", help="Matrix group name (optional if identifier contains group/name)"
+        None,
+        "--group",
+        "-g",
+        help="Matrix group name (optional if identifier contains group/name)",
     ),
     format: str = typer.Option(
         "mat", "--format", "-f", help="File format (mat, mm, rb)"
@@ -35,9 +38,7 @@ def download(
     workers: int = typer.Option(
         4, "--workers", "-w", help="Number of concurrent workers"
     ),
-    verify: bool = typer.Option(
-        False, "--verify", help="Enable checksum verification"
-    ),
+    verify: bool = typer.Option(False, "--verify", help="Enable checksum verification"),
 ):
     """Download a single matrix by name (auto-detects group) or by group/name."""
     downloader = SuiteSparseDownloader(
@@ -78,9 +79,7 @@ def get(
     workers: int = typer.Option(
         4, "--workers", "-w", help="Number of concurrent workers"
     ),
-    verify: bool = typer.Option(
-        False, "--verify", help="Enable checksum verification"
-    ),
+    verify: bool = typer.Option(False, "--verify", help="Enable checksum verification"),
 ):
     """Download a matrix by name only (automatically find group)."""
     downloader = SuiteSparseDownloader(
@@ -152,9 +151,7 @@ def bulk(
     max_files: int | None = typer.Option(
         None, "--max-files", help="Maximum number of files to download"
     ),
-    verify: bool = typer.Option(
-        False, "--verify", help="Enable checksum verification"
-    ),
+    verify: bool = typer.Option(False, "--verify", help="Enable checksum verification"),
 ):
     """Download multiple matrices matching filter criteria."""
     # Build filter
@@ -294,7 +291,10 @@ def list(
 def info(
     identifier: str = typer.Argument(..., help="Matrix name or group/name"),
     group: str | None = typer.Option(
-        None, "--group", "-g", help="Matrix group name (optional if identifier contains group/name)"
+        None,
+        "--group",
+        "-g",
+        help="Matrix group name (optional if identifier contains group/name)",
     ),
 ):
     """Show detailed information about a specific matrix."""
@@ -316,7 +316,7 @@ def info(
             matrices = downloader.list_matrices(name_filter, limit=10)
 
             # Find exact match
-            exact_matches = [m for m in matrices if m.get('name') == identifier]
+            exact_matches = [m for m in matrices if m.get("name") == identifier]
             if not exact_matches:
                 console.print(f"Matrix '{identifier}' not found")
                 raise typer.Exit(1)
@@ -324,14 +324,16 @@ def info(
                 console.print(f"Multiple matrices named '{identifier}' found:")
                 for m in exact_matches:
                     console.print(f"  {m.get('group', '')}/{m.get('name', '')}")
-                console.print("Please specify the group with --group or use group/name format")
+                console.print(
+                    "Please specify the group with --group or use group/name format"
+                )
                 raise typer.Exit(1)
 
             matrix = exact_matches[0]
-            group_name = matrix.get('group', '')
-            matrix_name = matrix.get('name', '')
+            group_name = matrix.get("group", "")
+            matrix_name = matrix.get("name", "")
 
-        if 'matrix' not in locals():
+        if "matrix" not in locals():
             # Find the specific matrix using group and name
             filter_obj = Filter(group=group_name, name=matrix_name)
             matrices = downloader.list_matrices(filter_obj, limit=1)
@@ -353,26 +355,32 @@ def info(
             ("Matrix ID", matrix.get("matrix_id", "Unknown")),
             ("Group", matrix.get("group")),
             ("Name", matrix.get("name")),
-
             # Dimensions and structure
             ("Dimensions", f"{matrix.get('rows', 0)}×{matrix.get('cols', 0)}"),
             ("Nonzeros (NNZ)", f"{matrix.get('nnz', 0):,}"),
             ("Pattern Entries", f"{matrix.get('pattern_entries', 0):,}"),
-
             # Mathematical properties
             ("Symmetric", matrix.get("symmetric")),
             ("Positive Definite", matrix.get("posdef")),
             ("SPD (Symmetric Positive Definite)", matrix.get("spd")),
-            ("Pattern Symmetry", f"{matrix.get('pattern_symmetry', 0)*100:.0f}%" if matrix.get('pattern_symmetry') is not None else "Unknown"),
-            ("Numerical Symmetry", f"{matrix.get('numerical_symmetry', 0)*100:.0f}%" if matrix.get('numerical_symmetry') is not None else "Unknown"),
-
+            (
+                "Pattern Symmetry",
+                f"{matrix.get('pattern_symmetry', 0) * 100:.0f}%"
+                if matrix.get("pattern_symmetry") is not None
+                else "Unknown",
+            ),
+            (
+                "Numerical Symmetry",
+                f"{matrix.get('numerical_symmetry', 0) * 100:.0f}%"
+                if matrix.get("numerical_symmetry") is not None
+                else "Unknown",
+            ),
             # Field type and properties
             ("Field Type", matrix.get("field", "Unknown")),
             ("Real", matrix.get("real")),
             ("Binary", matrix.get("binary")),
             ("Complex", matrix.get("complex")),
             ("2D/3D Discretization", matrix.get("2d_3d")),
-
             # Problem classification
             ("Problem Type", matrix.get("kind", "Unknown")),
         ]
@@ -383,7 +391,10 @@ def info(
                 if isinstance(value, bool):
                     formatted_value = "✓" if value else "✗"
                 elif isinstance(value, int | float) and not isinstance(value, bool):
-                    if isinstance(value, float) and label not in ["Pattern Symmetry", "Numerical Symmetry"]:
+                    if isinstance(value, float) and label not in [
+                        "Pattern Symmetry",
+                        "Numerical Symmetry",
+                    ]:
                         formatted_value = f"{value:,.0f}"
                     else:
                         formatted_value = str(value)

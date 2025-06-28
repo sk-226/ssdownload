@@ -216,7 +216,9 @@ class SuiteSparseDownloader:
                     if not group or not name:
                         return None
 
-                    path = await self.download(group, name, format_type, output_dir, _show_progress=False)
+                    path = await self.download(
+                        group, name, format_type, output_dir, _show_progress=False
+                    )
                     return path
                 except Exception as e:
                     self.console.print(
@@ -264,11 +266,12 @@ class SuiteSparseDownloader:
             asyncio.get_running_loop()
             # If we're in a loop, we can't use asyncio.run
             import warnings
+
             warnings.warn(
                 "list_matrices() called from within an async context. "
                 "Consider using find_matrices() directly instead.",
                 RuntimeWarning,
-                stacklevel=2
+                stacklevel=2,
             )
             # Return empty list to avoid blocking
             return []
