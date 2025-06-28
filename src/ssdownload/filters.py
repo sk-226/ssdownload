@@ -137,7 +137,7 @@ class Filter:
 
     def to_dict(self) -> dict[str, Any]:
         """Convert filter to dictionary representation."""
-        result = {}
+        result: dict[str, Any] = {}
 
         if self.spd is not None:
             result["spd"] = self.spd

@@ -18,7 +18,9 @@
       "Bash(awk:*)",
       "WebFetch(domain:github.com)",
       "Bash(uv sync:*)",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "Bash(gh run list:*)",
+      "Bash(gh run view:*)"
     ],
     "deny": []
   }

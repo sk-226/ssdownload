@@ -168,7 +168,11 @@ class IndexManager:
 
             # Derive symmetric flag from numerical_symmetry
             # Consider matrices with >99% numerical symmetry as symmetric
-            matrix_info["symmetric"] = matrix_info["numerical_symmetry"] >= 0.99
+            numerical_sym_val = matrix_info["numerical_symmetry"]
+            if isinstance(numerical_sym_val, (int, float)):
+                matrix_info["symmetric"] = numerical_sym_val >= 0.99
+            else:
+                matrix_info["symmetric"] = False
 
             # Calculate SPD (Symmetric Positive Definite): symmetric AND positive definite AND real AND square
             is_square = matrix_info["rows"] == matrix_info["cols"]

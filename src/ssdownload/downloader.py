@@ -37,7 +37,7 @@ from .exceptions import ChecksumError
 class FileDownloader:
     """Handles file downloading with resume support and checksum verification."""
 
-    def __init__(self, verify_checksums: bool = True, timeout: float = None):
+    def __init__(self, verify_checksums: bool = True, timeout: float | None = None):
         """Initialize the file downloader.
 
         Args:

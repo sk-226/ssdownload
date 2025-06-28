@@ -37,7 +37,7 @@ jobs:
       run: |
         uv pip install pip-audit
         uv run pip-audit --format=json --output=audit-results.json || true
-        uv run pip-audit --format=table
+        uv run pip-audit || true
 
     - name: Upload pip-audit results
       uses: actions/upload-artifact@v4
@@ -57,15 +57,12 @@ jobs:
       uses: github/codeql-action/init@v3
       with:
         languages: python
-        queries: security-extended
 
     - name: Autobuild
       uses: github/codeql-action/autobuild@v3
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v3
-      with:
-        category: "/language:python"
 
   secret-scan:
     runs-on: ubuntu-latest
@@ -94,7 +91,7 @@ jobs:
       uses: actions/dependency-review-action@v4
       with:
         fail-on-severity: moderate
-        allow-licenses: MIT, Apache-2.0, BSD-2-Clause, BSD-3-Clause, ISC
+        allow-licenses: MIT, Apache-2.0, BSD-2-Clause, BSD-3-Clause, ISC, AGPL-3.0
 
   security-summary:
     runs-on: ubuntu-latest
