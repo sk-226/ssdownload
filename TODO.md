@@ -170,7 +170,7 @@ Fix for incorrect matrix information and data inconsistencies in `ssdl info` com
 ### CLI Improvements
 - [ ] **Add data validation commands**
   - [ ] `ssdl validate-cache` command
-  - [ ] `ssdl refresh-cache` command  
+  - [ ] `ssdl refresh-cache` command
   - [ ] `ssdl repair-cache` command
   - [ ] `ssdl clean-cache` command (remove .part files)
 - [ ] **Enhance search and filtering**
@@ -291,7 +291,7 @@ Fix for incorrect matrix information and data inconsistencies in `ssdl info` com
 5. Add `ssdl clean-cache` command for .part file cleanup
 6. Update all URLs to official sparse.tamu.edu endpoints
 
-### 📈 **MEDIUM (Following Sprints)**  
+### 📈 **MEDIUM (Following Sprints)**
 7. Enhanced metadata collection from individual matrix pages
 8. Improved cache management and validation
 9. Extended CLI commands and options

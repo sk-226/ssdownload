@@ -92,9 +92,11 @@ class IndexManager:
                 stat = index_file.stat()
                 if (current_time - stat.st_mtime) < Config.CACHE_TTL:
                     with open(index_file, encoding="utf-8") as f:
-                        self._csv_index_cache = json.load(f)
-                        self._csv_index_cache_time = current_time
-                        return self._csv_index_cache
+                        cached_data = json.load(f)
+                        if isinstance(cached_data, list):
+                            self._csv_index_cache = cached_data
+                            self._csv_index_cache_time = current_time
+                            return self._csv_index_cache
             except (json.JSONDecodeError, OSError):
                 pass
 

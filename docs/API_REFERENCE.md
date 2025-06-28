@@ -291,10 +291,10 @@ with Progress(
     transient=True,
 ) as progress:
     task = progress.add_task("Downloading matrices...", total=None)
-    
+
     filter_obj = Filter(spd=True, n_rows=(1000, 5000))
     paths = await downloader.bulk_download(filter_obj, max_files=10)
-    
+
     progress.update(task, completed=len(paths))
 ```
 
@@ -305,16 +305,16 @@ import asyncio
 
 async def download_multiple():
     downloader = SuiteSparseDownloader(workers=8)
-    
+
     # Download multiple matrices concurrently
     tasks = [
         downloader.download_by_name("ct20stif"),
         downloader.download_by_name("bcsstk14"),
         downloader.download_by_name("bcspwr01")
     ]
-    
+
     paths = await asyncio.gather(*tasks, return_exceptions=True)
-    
+
     for i, result in enumerate(paths):
         if isinstance(result, Exception):
             print(f"Download {i} failed: {result}")
@@ -334,13 +334,13 @@ import shutil
 class CustomDownloader(SuiteSparseDownloader):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-    
+
     def clear_cache(self):
         """Clear the entire cache directory."""
         if self.cache_dir.exists():
             shutil.rmtree(self.cache_dir)
             self.cache_dir.mkdir(parents=True, exist_ok=True)
-    
+
     def get_cache_size(self) -> int:
         """Get total cache size in bytes."""
         total_size = 0
@@ -365,25 +365,25 @@ from pathlib import Path
 async def download_and_load_matrix(name: str):
     """Download matrix and load into NumPy array."""
     downloader = SuiteSparseDownloader()
-    
+
     # Download MAT file
     path = await downloader.download_by_name(name, format_type="mat")
-    
+
     # Load matrix data
     mat_data = scipy.io.loadmat(path)
-    
+
     # Extract the sparse matrix (usually stored under 'Problem')
     if 'Problem' in mat_data:
         matrix = mat_data['Problem'][0, 0]['A']
         return matrix.toarray() if hasattr(matrix, 'toarray') else matrix
     else:
         # Fallback: find the largest array
-        arrays = {k: v for k, v in mat_data.items() 
+        arrays = {k: v for k, v in mat_data.items()
                  if isinstance(v, np.ndarray) and not k.startswith('__')}
         if arrays:
             largest_key = max(arrays.keys(), key=lambda k: arrays[k].size)
             return arrays[largest_key]
-    
+
     return None
 
 # Usage

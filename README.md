@@ -9,7 +9,7 @@ A command-line tool and Python library that makes it easy to discover, download,
 ## ✨ Features
 
 - 🔍 **Smart Matrix Discovery** - Search by size, sparsity, mathematical properties, and more
-- 📦 **Multiple Formats** - Download MAT-files, Matrix Market, or Rutherford-Boeing formats  
+- 📦 **Multiple Formats** - Download MAT-files, Matrix Market, or Rutherford-Boeing formats
 - ⚡ **Concurrent Downloads** - Up to 8 parallel downloads with progress tracking
 - 🔄 **Resume Support** - Interrupted downloads continue automatically
 - ✅ **Integrity Verification** - MD5 checksum validation ensures data accuracy
@@ -93,7 +93,7 @@ We welcome contributions! Please see our [Development Guide](docs/DEVELOPMENT.md
 
 1. Fork the repository
 2. Create your feature branch
-3. Add tests for new functionality  
+3. Add tests for new functionality
 4. Submit a pull request
 
 ## 📄 License

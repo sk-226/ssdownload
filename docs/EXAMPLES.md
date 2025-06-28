@@ -71,11 +71,11 @@ from pathlib import Path
 async def basic_example():
     # Initialize downloader
     downloader = SuiteSparseDownloader(cache_dir="./matrices")
-    
+
     # Download single matrix
     path = await downloader.download_by_name("ct20stif")
     print(f"Downloaded to: {path}")
-    
+
     # Download specific format
     path = await downloader.download("Boeing", "ct20stif", format_type="mm")
     print(f"Matrix Market file: {path}")
@@ -92,22 +92,22 @@ from ssdownload import SuiteSparseDownloader, Filter
 
 async def search_examples():
     downloader = SuiteSparseDownloader()
-    
+
     # Find SPD matrices
     spd_filter = Filter(spd=True, n_rows=(1000, 10000))
     matrices = await downloader.find_matrices(spd_filter)
-    
+
     print(f"Found {len(matrices)} SPD matrices:")
     for matrix in matrices[:5]:  # Show first 5
         print(f"  {matrix['group']}/{matrix['name']}: "
               f"{matrix['num_rows']}×{matrix['num_cols']}, "
               f"nnz={matrix['nnz']:,}")
-    
+
     # Search by group and field type
     boeing_filter = Filter(group="Boeing", field="real")
     boeing_matrices = await downloader.find_matrices(boeing_filter)
     print(f"\nFound {len(boeing_matrices)} Boeing real-valued matrices")
-    
+
     # Complex filter
     complex_filter = Filter(
         n_rows=(5000, 50000),
@@ -133,18 +133,18 @@ async def bulk_download_examples():
         workers=6,
         verify_checksums=True
     )
-    
+
     # Download small SPD matrices
     small_spd = Filter(spd=True, n_rows=(None, 5000))
     paths = await downloader.bulk_download(
-        small_spd, 
-        format_type="mat", 
+        small_spd,
+        format_type="mat",
         max_files=10
     )
     print(f"Downloaded {len(paths)} small SPD matrices:")
     for path in paths:
         print(f"  {path}")
-    
+
     # Download matrices from specific groups
     group_filter = Filter(group="HB")
     hb_paths = await downloader.bulk_download(
@@ -169,21 +169,21 @@ from ssdownload import SuiteSparseDownloader
 
 async def load_matrix_example():
     downloader = SuiteSparseDownloader()
-    
+
     # Download and load a matrix
     path = await downloader.download_by_name("bcsstk14", format_type="mat")
     mat_data = scipy.io.loadmat(path)
-    
+
     # Extract the matrix (typically stored in 'Problem' field)
     if 'Problem' in mat_data:
         problem = mat_data['Problem'][0, 0]
         matrix = problem['A']
-        
+
         print(f"Matrix shape: {matrix.shape}")
         print(f"Matrix type: {type(matrix)}")
         print(f"Non-zeros: {matrix.nnz}")
         print(f"Density: {matrix.nnz / (matrix.shape[0] * matrix.shape[1]):.6f}")
-        
+
         # Convert to dense for small matrices
         if matrix.shape[0] < 1000:
             dense = matrix.toarray()
@@ -204,29 +204,29 @@ from ssdownload import SuiteSparseDownloader, Filter
 async def matrix_analysis_pipeline():
     """Download and analyze multiple matrices."""
     downloader = SuiteSparseDownloader()
-    
+
     # Find small SPD matrices for analysis
     filter_obj = Filter(spd=True, n_rows=(100, 1000), field="real")
     matrices_info = await downloader.find_matrices(filter_obj)
-    
+
     print(f"Analyzing {len(matrices_info[:5])} matrices:")
-    
+
     for info in matrices_info[:5]:  # Analyze first 5
         name = info['name']
         group = info['group']
-        
+
         # Download matrix
         path = await downloader.download(group, name)
-        
+
         # Load and analyze
         mat_data = scipy.io.loadmat(path)
         if 'Problem' in mat_data:
             matrix = mat_data['Problem'][0, 0]['A']
-            
+
             # Basic properties
             eigenvals = np.linalg.eigvals(matrix.toarray()) if matrix.shape[0] < 500 else None
             condition_number = np.max(eigenvals) / np.min(eigenvals) if eigenvals is not None else "N/A"
-            
+
             print(f"\n{group}/{name}:")
             print(f"  Size: {matrix.shape[0]}×{matrix.shape[1]}")
             print(f"  Non-zeros: {matrix.nnz:,}")
@@ -249,36 +249,36 @@ from ssdownload import SuiteSparseDownloader, Filter
 
 async def custom_progress_example():
     downloader = SuiteSparseDownloader(workers=4)
-    
+
     with Progress(
         SpinnerColumn(),
         TextColumn("[progress.description]{task.description}"),
         BarColumn(),
         TextColumn("[progress.percentage]{task.percentage:>3.0f}%"),
     ) as progress:
-        
+
         # Search task
         search_task = progress.add_task("Searching matrices...", total=None)
         filter_obj = Filter(spd=True, n_rows=(1000, 5000))
         matrices = await downloader.find_matrices(filter_obj)
         progress.remove_task(search_task)
-        
+
         # Download task
         download_count = min(10, len(matrices))
         download_task = progress.add_task(
-            f"Downloading {download_count} matrices...", 
+            f"Downloading {download_count} matrices...",
             total=download_count
         )
-        
+
         paths = []
         for i, matrix_info in enumerate(matrices[:download_count]):
             path = await downloader.download(
-                matrix_info['group'], 
+                matrix_info['group'],
                 matrix_info['name']
             )
             paths.append(path)
             progress.update(download_task, advance=1)
-        
+
         progress.update(download_task, description=f"Downloaded {len(paths)} matrices!")
 
 asyncio.run(custom_progress_example())
@@ -293,9 +293,9 @@ from ssdownload.exceptions import MatrixNotFoundError, NetworkError, DownloadErr
 
 async def robust_download_example():
     downloader = SuiteSparseDownloader(timeout=60.0)
-    
+
     matrix_names = ["ct20stif", "bcsstk14", "nonexistent_matrix", "bcspwr01"]
-    
+
     async def download_with_retry(name: str, max_retries: int = 3):
         for attempt in range(max_retries):
             try:
@@ -311,21 +311,21 @@ async def robust_download_example():
                 return None, f"Network error after {max_retries} attempts: {e}"
             except DownloadError as e:
                 return None, f"Download error: {e}"
-        
+
         return None, f"Failed after {max_retries} attempts"
-    
+
     # Download with error handling
     results = []
     for name in matrix_names:
         print(f"Downloading {name}...")
         path, error = await download_with_retry(name)
-        
+
         if path:
             print(f"  ✓ Downloaded to: {path}")
             results.append(path)
         else:
             print(f"  ✗ Failed: {error}")
-    
+
     print(f"\nSuccessfully downloaded {len(results)} out of {len(matrix_names)} matrices")
 
 asyncio.run(robust_download_example())
@@ -357,22 +357,22 @@ def analyze_matrix_file(file_path):
 
 async def concurrent_processing_example():
     downloader = SuiteSparseDownloader(workers=8)
-    
+
     # Download matrices
     filter_obj = Filter(n_rows=(100, 2000), field="real")
     matrices_info = (await downloader.find_matrices(filter_obj))[:10]
-    
+
     print(f"Downloading {len(matrices_info)} matrices...")
     download_tasks = [
         downloader.download(info['group'], info['name'])
         for info in matrices_info
     ]
     paths = await asyncio.gather(*download_tasks, return_exceptions=True)
-    
+
     # Filter successful downloads
     valid_paths = [p for p in paths if not isinstance(p, Exception)]
     print(f"Successfully downloaded {len(valid_paths)} matrices")
-    
+
     # Analyze matrices concurrently using thread pool
     print("Analyzing matrices...")
     with ThreadPoolExecutor(max_workers=4) as executor:
@@ -382,7 +382,7 @@ async def concurrent_processing_example():
             for path in valid_paths
         ]
         results = await asyncio.gather(*analysis_tasks)
-    
+
     # Display results
     print("\nAnalysis Results:")
     for result in results:
@@ -416,17 +416,17 @@ downloader = SuiteSparseDownloader(cache_dir="./notebook_matrices")
 async def download_and_plot():
     # Download a small matrix
     path = await downloader.download_by_name("bcsstk14")
-    
+
     # Load matrix
     mat_data = scipy.io.loadmat(path)
     matrix = mat_data['Problem'][0, 0]['A'].toarray()
-    
+
     # Plot sparsity pattern
     plt.figure(figsize=(8, 8))
     plt.spy(matrix, markersize=0.5)
     plt.title("Sparsity Pattern of bcsstk14")
     plt.show()
-    
+
     return matrix
 
 matrix = await download_and_plot()
@@ -471,36 +471,36 @@ from ssdownload import SuiteSparseDownloader, Filter
 async def create_matrix_dataset():
     """Create a dataset of matrix properties for analysis."""
     downloader = SuiteSparseDownloader()
-    
+
     # Get matrices from multiple groups
     groups = ["Boeing", "HB", "FIDAP"]
     all_matrices = []
-    
+
     for group in groups:
         group_filter = Filter(group=group, n_rows=(100, 10000))
         matrices = await downloader.find_matrices(group_filter)
         all_matrices.extend(matrices[:20])  # Limit per group
-    
+
     # Create DataFrame
     df = pd.DataFrame(all_matrices)
-    
+
     # Add computed columns
     if not df.empty:
         df['density'] = df['nnz'] / (df['num_rows'] * df['num_cols'])
         df['aspect_ratio'] = df['num_rows'] / df['num_cols']
-        df['size_category'] = pd.cut(df['num_rows'], 
-                                   bins=[0, 1000, 10000, float('inf')], 
+        df['size_category'] = pd.cut(df['num_rows'],
+                                   bins=[0, 1000, 10000, float('inf')],
                                    labels=['Small', 'Medium', 'Large'])
-    
+
     # Save dataset
     output_file = "matrix_dataset.csv"
     df.to_csv(output_file, index=False)
     print(f"Created dataset with {len(df)} matrices: {output_file}")
-    
+
     # Basic statistics
     print("\nDataset Statistics:")
     print(df.groupby(['group', 'size_category']).size().unstack(fill_value=0))
-    
+
     return df
 
 # Run the pipeline
@@ -574,7 +574,7 @@ def ensure_fresh_cache():
     """Clear cache and ensure fresh data for analysis."""
     try:
         # Clear the cache
-        result = subprocess.run(['uv', 'run', 'ssdl', 'clean-cache', '--yes'], 
+        result = subprocess.run(['uv', 'run', 'ssdl', 'clean-cache', '--yes'],
                               capture_output=True, text=True)
         if result.returncode == 0:
             print("✓ Cache cleared successfully")
@@ -586,9 +586,9 @@ def ensure_fresh_cache():
 def download_with_fresh_data(matrix_name):
     """Download matrix with guaranteed fresh index data."""
     ensure_fresh_cache()
-    
+
     # Now download the matrix
-    result = subprocess.run(['uv', 'run', 'ssdl', 'download', matrix_name], 
+    result = subprocess.run(['uv', 'run', 'ssdl', 'download', matrix_name],
                           capture_output=True, text=True)
     if result.returncode == 0:
         print(f"✓ Downloaded {matrix_name}")
@@ -601,7 +601,7 @@ def download_with_fresh_data(matrix_name):
 if __name__ == "__main__":
     # Download critical matrices with fresh data
     critical_matrices = ['ct20stif', 'nos5', 'bcsstk14']
-    
+
     for matrix in critical_matrices:
         success = download_with_fresh_data(matrix)
         if not success:

@@ -7,7 +7,7 @@ body:
     attributes:
       value: |
         Thanks for your interest in improving ssdownload! 🚀
-        
+
         Please check if your feature has already been requested before submitting.
 
   - type: textarea
