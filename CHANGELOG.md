@@ -12,6 +12,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - 📁 Cache files now stored in OS-appropriate locations (e.g., `~/.cache/ssdownload/` on Linux/macOS)
   - 🧹 No more scattered `ssstats_cache.json` files in working directories
   - 🔧 Environment variable `SSDOWNLOAD_CACHE_DIR` can override default location
+- **🆕 NEW**: `ssdl clean-cache` command for system cache management
+  - 🧹 Clear matrix index cache (`ssstats_cache.json`) from system cache directory
+  - 📊 Display cache file location and size before deletion
+  - ⚡ Skip confirmation with `--yes` flag for automated scripts
+  - 🔄 Forces fresh index download on next matrix operation
 - 📊 Enhanced matrix information display with correct field mappings from UFstats.csv format
 - 🔢 Pattern Entries field showing number of zero and explicit zero entries in sparse matrices
 - 🆔 Matrix ID display in `ssdl info` command for easy reference
@@ -34,6 +39,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **🚨 CRITICAL**: Fixed PART file pollution - downloads now check for existing files before starting and skip re-downloading existing valid files
 - **🚨 CRITICAL**: Fixed --spd option logic to properly filter for Symmetric Positive Definite matrices (symmetric AND positive definite AND square)
 - **🚨 CRITICAL**: Fixed CSV field order parsing according to official UFstats.csv specification
+- 🔧 Fixed all MyPy type errors for improved code quality and type safety
+  - ✅ Fixed Optional/Union type annotations (e.g., `float | None` instead of `float = None`)
+  - ✅ Fixed dictionary type annotations in filters and CLI utilities
+  - ✅ Improved numerical type safety in matrix symmetry calculations
 - 🧪 Updated test suite to reflect improved SPD filtering logic and correct CSV data
 - 🧹 Improved downloader cleanup logic to prevent interference with temporary files
 
