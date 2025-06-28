@@ -267,9 +267,68 @@ class TestCLI:
 
     def test_command_help_messages(self):
         """Test that all commands have proper help messages."""
-        commands = ["download", "bulk", "list", "info"]
+        commands = ["download", "bulk", "list", "info", "clean-cache"]
 
         for cmd in commands:
             result = self.runner.invoke(app, [cmd, "--help"])
             assert result.exit_code == 0
             assert len(result.stdout) > 50  # Should have substantial help text
+
+    @patch("ssdownload.cli.Config.get_default_cache_dir")
+    def test_clean_cache_no_cache_file(self, mock_cache_dir):
+        """Test clean-cache command when no cache file exists."""
+        import tempfile
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            cache_dir = Path(temp_dir)
+            mock_cache_dir.return_value = cache_dir
+
+            result = self.runner.invoke(app, ["clean-cache", "--yes"])
+
+            assert result.exit_code == 0
+            assert "No cache file found" in result.stdout
+            assert "cache is already clean" in result.stdout
+
+    @patch("ssdownload.cli.Config.get_default_cache_dir")
+    def test_clean_cache_with_existing_file(self, mock_cache_dir):
+        """Test clean-cache command with existing cache file."""
+        import tempfile
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            cache_dir = Path(temp_dir)
+            cache_file = cache_dir / "ssstats_cache.json"
+
+            # Create a fake cache file
+            cache_file.write_text('{"test": "data"}')
+
+            mock_cache_dir.return_value = cache_dir
+
+            result = self.runner.invoke(app, ["clean-cache", "--yes"])
+
+            assert result.exit_code == 0
+            assert "Cache cleared successfully" in result.stdout
+            assert (
+                "Next matrix operation will download fresh index data" in result.stdout
+            )
+            assert not cache_file.exists()
+
+    @patch("ssdownload.cli.Config.get_default_cache_dir")
+    def test_clean_cache_shows_cache_info(self, mock_cache_dir):
+        """Test clean-cache command shows cache file information."""
+        import tempfile
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            cache_dir = Path(temp_dir)
+            cache_file = cache_dir / "ssstats_cache.json"
+
+            # Create a cache file with known content
+            test_data = '{"test": "data"}' * 100  # Make it bigger
+            cache_file.write_text(test_data)
+
+            mock_cache_dir.return_value = cache_dir
+
+            result = self.runner.invoke(app, ["clean-cache", "--yes"])
+
+            assert result.exit_code == 0
+            assert str(cache_file) in result.stdout
+            assert "KB" in result.stdout or "MB" in result.stdout
