@@ -51,9 +51,26 @@ jobs:
         print(f'Default cache directory: {cache_dir}')
         assert cache_dir.exists() or True  # Directory creation is lazy
         "
-        
-        # Test environment variable override
+      
+    - name: Test cache directory override (Unix)
+      if: runner.os != 'Windows'
+      run: |
+        # Test environment variable override on Unix systems
         export SSDOWNLOAD_CACHE_DIR="/tmp/test_ssdownload_cache"
+        uv run python -c "
+        import os
+        from ssdownload.config import Config
+        cache_dir = Config.get_default_cache_dir()
+        expected = os.getenv('SSDOWNLOAD_CACHE_DIR')
+        print(f'Override cache directory: {cache_dir}')
+        assert str(cache_dir) == expected
+        "
+        
+    - name: Test cache directory override (Windows)
+      if: runner.os == 'Windows'
+      run: |
+        # Test environment variable override on Windows
+        $env:SSDOWNLOAD_CACHE_DIR = "C:\temp\test_ssdownload_cache"
         uv run python -c "
         import os
         from ssdownload.config import Config
