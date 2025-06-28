@@ -9,7 +9,18 @@
       "Bash(mv:*)",
       "Bash(find:*)",
       "Bash(uv run pytest:*)",
-      "Bash(uv run:*)"
+      "Bash(uv run:*)",
+      "Bash(grep:*)",
+      "Bash(jq length:*)",
+      "Bash(jq:*)",
+      "Bash(curl:*)",
+      "WebFetch(domain:sparse.tamu.edu)",
+      "Bash(awk:*)",
+      "WebFetch(domain:github.com)",
+      "Bash(uv sync:*)",
+      "Bash(ls:*)",
+      "Bash(gh run list:*)",
+      "Bash(gh run view:*)"
     ],
     "deny": []
   }
