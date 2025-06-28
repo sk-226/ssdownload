@@ -43,6 +43,9 @@ uv run ssdl list --spd --size 1000:10000 --field real
 
 # Bulk download SPD matrices
 uv run ssdl bulk --spd --max-files 10
+
+# Bulk download real SPD matrices in size range
+uv run ssdl bulk --spd --field real --size 100:1000 --max-files 5
 ```
 
 <details>
