@@ -47,22 +47,18 @@ jobs:
         path: audit-results.json
         retention-days: 30
 
-  codeql-analysis:
-    runs-on: ubuntu-latest
-    
-    steps:
-    - uses: actions/checkout@v4
-
-    - name: Initialize CodeQL
-      uses: github/codeql-action/init@v3
-      with:
-        languages: python
-
-    - name: Autobuild
-      uses: github/codeql-action/autobuild@v3
-
-    - name: Perform CodeQL Analysis
-      uses: github/codeql-action/analyze@v3
+  # CodeQL analysis is handled by GitHub's default setup
+  # Remove this job to avoid conflicts with default CodeQL configuration
+  # codeql-analysis:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #   - uses: actions/checkout@v4
+  #   - name: Initialize CodeQL
+  #     uses: github/codeql-action/init@v3
+  #   - name: Autobuild  
+  #     uses: github/codeql-action/autobuild@v3
+  #   - name: Perform CodeQL Analysis
+  #     uses: github/codeql-action/analyze@v3
 
   secret-scan:
     runs-on: ubuntu-latest
@@ -95,7 +91,7 @@ jobs:
 
   security-summary:
     runs-on: ubuntu-latest
-    needs: [dependency-scan, codeql-analysis, secret-scan]
+    needs: [dependency-scan, secret-scan]
     if: always()
     
     steps:
@@ -110,11 +106,7 @@ jobs:
           echo "❌ **Dependency Scan**: Failed or had issues" >> $GITHUB_STEP_SUMMARY
         fi
         
-        if [ "${{ needs.codeql-analysis.result }}" == "success" ]; then
-          echo "✅ **CodeQL Analysis**: Passed" >> $GITHUB_STEP_SUMMARY
-        else
-          echo "❌ **CodeQL Analysis**: Failed or had issues" >> $GITHUB_STEP_SUMMARY
-        fi
+        echo "ℹ️ **CodeQL Analysis**: Handled by GitHub default setup" >> $GITHUB_STEP_SUMMARY
         
         if [ "${{ needs.secret-scan.result }}" == "success" ]; then
           echo "✅ **Secret Scan**: Passed" >> $GITHUB_STEP_SUMMARY
