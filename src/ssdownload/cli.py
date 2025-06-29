@@ -229,14 +229,20 @@ def list(
     downloader = SuiteSparseDownloader()
 
     try:
-        matrices = downloader.list_matrices(filter_obj, limit)
+        matrices, total_count = downloader.list_matrices(filter_obj, limit)
 
         if not matrices:
             console.print("No matrices found matching criteria")
             return
 
-        # Create table
-        table = Table(title=f"SuiteSparse Matrices ({len(matrices)} found)")
+        # Create table with improved title
+        displayed_count = len(matrices)
+        if total_count > displayed_count:
+            title = f"SuiteSparse Matrices (showing {displayed_count} of {total_count} total, use --limit to see more)"
+        else:
+            title = f"SuiteSparse Matrices ({total_count} total)"
+
+        table = Table(title=title)
 
         if verbose:
             table.add_column("Group", style="cyan")
@@ -313,7 +319,7 @@ def info(
             console.print(f"🔍 Searching for matrix '{identifier}'...")
             # Use name filter to find the matrix
             name_filter = Filter(name=identifier)
-            matrices = downloader.list_matrices(name_filter, limit=10)
+            matrices, _ = downloader.list_matrices(name_filter, limit=10)
 
             # Find exact match
             exact_matches = [m for m in matrices if m.get("name") == identifier]
@@ -336,7 +342,7 @@ def info(
         if "matrix" not in locals():
             # Find the specific matrix using group and name
             filter_obj = Filter(group=group_name, name=matrix_name)
-            matrices = downloader.list_matrices(filter_obj, limit=1)
+            matrices, _ = downloader.list_matrices(filter_obj, limit=1)
 
             if not matrices:
                 console.print(f"Matrix {group_name}/{matrix_name} not found")

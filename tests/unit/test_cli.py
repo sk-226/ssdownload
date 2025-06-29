@@ -167,7 +167,7 @@ class TestCLI:
         ]
 
         mock_downloader = MagicMock()
-        mock_downloader.list_matrices.return_value = mock_matrices
+        mock_downloader.list_matrices.return_value = (mock_matrices, len(mock_matrices))
         mock_downloader_class.return_value = mock_downloader
 
         result = self.runner.invoke(app, ["list", "--limit", "10"])
@@ -198,7 +198,7 @@ class TestCLI:
         ]
 
         mock_downloader = MagicMock()
-        mock_downloader.list_matrices.return_value = mock_matrices
+        mock_downloader.list_matrices.return_value = (mock_matrices, len(mock_matrices))
         mock_downloader_class.return_value = mock_downloader
 
         result = self.runner.invoke(app, ["list", "--verbose"])
@@ -213,7 +213,7 @@ class TestCLI:
     def test_list_command_with_filters(self, mock_downloader_class):
         """Test list command with filters."""
         mock_downloader = MagicMock()
-        mock_downloader.list_matrices.return_value = []
+        mock_downloader.list_matrices.return_value = ([], 0)
         mock_downloader_class.return_value = mock_downloader
 
         result = self.runner.invoke(
@@ -240,7 +240,7 @@ class TestCLI:
         }
 
         mock_downloader = MagicMock()
-        mock_downloader.list_matrices.return_value = [mock_matrix]
+        mock_downloader.list_matrices.return_value = ([mock_matrix], 1)
         mock_downloader._get_matrix_url.side_effect = (
             lambda g, n, f: f"https://sparse.tamu.edu/{f}/{g}/{n}.ext"
         )
@@ -257,7 +257,7 @@ class TestCLI:
     def test_info_command_not_found(self, mock_downloader_class):
         """Test info command with non-existent matrix."""
         mock_downloader = MagicMock()
-        mock_downloader.list_matrices.return_value = []
+        mock_downloader.list_matrices.return_value = ([], 0)
         mock_downloader_class.return_value = mock_downloader
 
         result = self.runner.invoke(app, ["info", "NonExistent/matrix"])

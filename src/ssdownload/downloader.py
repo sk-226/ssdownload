@@ -136,33 +136,46 @@ class FileDownloader:
         if resume_pos > 0:
             headers["Range"] = f"bytes={resume_pos}-"
 
-        async with httpx.AsyncClient(
-            **Config.get_http_client_config(self.timeout)
-        ) as client:
-            async with client.stream("GET", url, headers=headers) as response:
-                response.raise_for_status()
+        try:
+            async with httpx.AsyncClient(
+                **Config.get_http_client_config(self.timeout)
+            ) as client:
+                async with client.stream("GET", url, headers=headers) as response:
+                    response.raise_for_status()
 
-                # Get total size for progress tracking
-                total_size = None
-                if "content-length" in response.headers:
-                    content_length = int(response.headers["content-length"])
-                    total_size = content_length + resume_pos
+                    # Get total size for progress tracking
+                    total_size = None
+                    if "content-length" in response.headers:
+                        content_length = int(response.headers["content-length"])
+                        total_size = content_length + resume_pos
 
-                if progress and task_id and total_size:
-                    progress.update(task_id, total=total_size, completed=resume_pos)
+                    if progress and task_id and total_size:
+                        progress.update(task_id, total=total_size, completed=resume_pos)
 
-                # Download with resume
-                mode = "ab" if resume_pos > 0 else "wb"
-                with open(temp_path, mode) as f:
-                    downloaded = resume_pos
-                    async for chunk in response.aiter_bytes(
-                        chunk_size=Config.CHUNK_SIZE
-                    ):
-                        f.write(chunk)
-                        downloaded += len(chunk)
+                    # Download with resume
+                    mode = "ab" if resume_pos > 0 else "wb"
+                    with open(temp_path, mode) as f:
+                        downloaded = resume_pos
+                        async for chunk in response.aiter_bytes(
+                            chunk_size=Config.CHUNK_SIZE
+                        ):
+                            f.write(chunk)
+                            downloaded += len(chunk)
 
-                        if progress and task_id:
-                            progress.update(task_id, completed=downloaded)
+                            if progress and task_id:
+                                progress.update(task_id, completed=downloaded)
+        except (httpx.TimeoutException, httpx.ConnectError, httpx.HTTPStatusError) as e:
+            from .exceptions import DownloadError
+
+            raise DownloadError(f"Network error during download: {e}") from e
+        except OSError as e:
+            from .exceptions import DownloadError
+
+            raise DownloadError(f"File system error during download: {e}") from e
+        except Exception as e:
+            from .exceptions import DownloadError
+
+            raise DownloadError(f"Unexpected error during download: {e}") from e
 
     async def _verify_file_checksum(self, file_path: Path, expected_md5: str) -> bool:
         """Verify file MD5 checksum.

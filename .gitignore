@@ -18,3 +18,7 @@ coverage.xml
 *.egg-info/
 build/
 dist/
+
+# Test artifacts
+.hypothesis/
+ssstats_cache.json
