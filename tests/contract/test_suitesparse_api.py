@@ -49,24 +49,27 @@ class TestSuiteSparseAPIContract:
                     fields = line.split(",")
                     assert (
                         len(fields) >= 12
-                    ), f"Line {i+3} has too few fields: {len(fields)}"
+                    ), f"Line {i + 3} has too few fields: {len(fields)}"
 
                     # Contract: Field format validation
                     group, name, rows, cols, nnz = fields[:5]
 
-                    assert len(group) > 0, f"Empty group at line {i+3}"
-                    assert len(name) > 0, f"Empty name at line {i+3}"
-                    assert rows.isdigit(), f"Non-numeric rows '{rows}' at line {i+3}"
-                    assert cols.isdigit(), f"Non-numeric cols '{cols}' at line {i+3}"
-                    assert nnz.isdigit(), f"Non-numeric nnz '{nnz}' at line {i+3}"
+                    assert len(group) > 0, f"Empty group at line {i + 3}"
+                    assert len(name) > 0, f"Empty name at line {i + 3}"
+                    assert rows.isdigit(), f"Non-numeric rows '{rows}' at line {i + 3}"
+                    assert cols.isdigit(), f"Non-numeric cols '{cols}' at line {i + 3}"
+                    assert nnz.isdigit(), f"Non-numeric nnz '{nnz}' at line {i + 3}"
 
                     # Validate boolean fields
                     bool_fields = fields[5:9]  # real, binary, complex, 2d_3d
                     for j, bool_field in enumerate(bool_fields):
-                        assert bool_field in [
-                            "0",
-                            "1",
-                        ], f"Invalid boolean '{bool_field}' at field {j+5}, line {i+3}"
+                        assert (
+                            bool_field
+                            in [
+                                "0",
+                                "1",
+                            ]
+                        ), f"Invalid boolean '{bool_field}' at field {j + 5}, line {i + 3}"
 
         except Exception as e:
             pytest.skip(f"CSV contract test failed: {e}")
