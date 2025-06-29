@@ -26,9 +26,9 @@ class TestSuiteSparseAPIContract:
                 assert len(lines) >= 2, "CSV should have at least header and one matrix"
 
                 first_line = lines[0].strip()
-                assert (
-                    first_line.isdigit()
-                ), f"First line should be number: {first_line}"
+                assert first_line.isdigit(), (
+                    f"First line should be number: {first_line}"
+                )
 
                 num_matrices = int(first_line)
                 assert num_matrices > 0, "Should have positive number of matrices"
@@ -47,9 +47,9 @@ class TestSuiteSparseAPIContract:
                         continue
 
                     fields = line.split(",")
-                    assert (
-                        len(fields) >= 12
-                    ), f"Line {i + 3} has too few fields: {len(fields)}"
+                    assert len(fields) >= 12, (
+                        f"Line {i + 3} has too few fields: {len(fields)}"
+                    )
 
                     # Contract: Field format validation
                     group, name, rows, cols, nnz = fields[:5]
@@ -63,13 +63,12 @@ class TestSuiteSparseAPIContract:
                     # Validate boolean fields
                     bool_fields = fields[5:9]  # real, binary, complex, 2d_3d
                     for j, bool_field in enumerate(bool_fields):
-                        assert (
-                            bool_field
-                            in [
-                                "0",
-                                "1",
-                            ]
-                        ), f"Invalid boolean '{bool_field}' at field {j + 5}, line {i + 3}"
+                        assert bool_field in [
+                            "0",
+                            "1",
+                        ], (
+                            f"Invalid boolean '{bool_field}' at field {j + 5}, line {i + 3}"
+                        )
 
         except Exception as e:
             pytest.skip(f"CSV contract test failed: {e}")
@@ -86,15 +85,15 @@ class TestSuiteSparseAPIContract:
                 # Contract: Required fields must exist
                 required_fields = ["group", "name"]
                 for field in required_fields:
-                    assert (
-                        field in matrix
-                    ), f"Missing required field '{field}' in matrix {i}"
-                    assert isinstance(
-                        matrix[field], str
-                    ), f"Field '{field}' should be string in matrix {i}"
-                    assert (
-                        len(matrix[field]) > 0
-                    ), f"Field '{field}' should not be empty in matrix {i}"
+                    assert field in matrix, (
+                        f"Missing required field '{field}' in matrix {i}"
+                    )
+                    assert isinstance(matrix[field], str), (
+                        f"Field '{field}' should be string in matrix {i}"
+                    )
+                    assert len(matrix[field]) > 0, (
+                        f"Field '{field}' should not be empty in matrix {i}"
+                    )
 
                 # Contract: Numeric fields should be numeric
                 numeric_fields = [
@@ -108,12 +107,12 @@ class TestSuiteSparseAPIContract:
                 for field in numeric_fields:
                     if field in matrix:
                         value = matrix[field]
-                        assert isinstance(
-                            value, int | float
-                        ), f"Field '{field}' should be numeric in matrix {i}, got {type(value)}"
-                        assert (
-                            value >= 0
-                        ), f"Field '{field}' should be non-negative in matrix {i}, got {value}"
+                        assert isinstance(value, int | float), (
+                            f"Field '{field}' should be numeric in matrix {i}, got {type(value)}"
+                        )
+                        assert value >= 0, (
+                            f"Field '{field}' should be non-negative in matrix {i}, got {value}"
+                        )
 
                 # Contract: Boolean fields should be boolean
                 boolean_fields = [
@@ -127,9 +126,9 @@ class TestSuiteSparseAPIContract:
                 for field in boolean_fields:
                     if field in matrix:
                         value = matrix[field]
-                        assert isinstance(
-                            value, bool
-                        ), f"Field '{field}' should be boolean in matrix {i}, got {type(value)}"
+                        assert isinstance(value, bool), (
+                            f"Field '{field}' should be boolean in matrix {i}, got {type(value)}"
+                        )
 
                 # Contract: Field mappings should be consistent
                 if "field" in matrix:
@@ -143,13 +142,13 @@ class TestSuiteSparseAPIContract:
 
                     # Consistency check with boolean flags
                     if field_value == "real" and "real" in matrix:
-                        assert (
-                            matrix["real"] is True
-                        ), f"Field='real' but real=False in matrix {i}"
+                        assert matrix["real"] is True, (
+                            f"Field='real' but real=False in matrix {i}"
+                        )
                     if field_value == "complex" and "complex" in matrix:
-                        assert (
-                            matrix["complex"] is True
-                        ), f"Field='complex' but complex=False in matrix {i}"
+                        assert matrix["complex"] is True, (
+                            f"Field='complex' but complex=False in matrix {i}"
+                        )
 
                 # Contract: Size consistency
                 if "size" in matrix:
@@ -159,9 +158,9 @@ class TestSuiteSparseAPIContract:
 
                     if rows and cols:
                         expected_size = max(rows, cols)
-                        assert (
-                            size == expected_size
-                        ), f"Size mismatch: size={size}, max(rows,cols)={expected_size} in matrix {i}"
+                        assert size == expected_size, (
+                            f"Size mismatch: size={size}, max(rows,cols)={expected_size} in matrix {i}"
+                        )
 
         except Exception as e:
             pytest.skip(f"Parsed data contract test failed: {e}")
@@ -187,23 +186,23 @@ class TestSuiteSparseAPIContract:
                 matrices, total_count = downloader.list_matrices(filter_obj, limit=5)
 
                 # Contract: Return type should be tuple
-                assert isinstance(
-                    matrices, list
-                ), f"Matrices should be list for filter {filter_obj}"
-                assert isinstance(
-                    total_count, int
-                ), f"Total count should be int for filter {filter_obj}"
+                assert isinstance(matrices, list), (
+                    f"Matrices should be list for filter {filter_obj}"
+                )
+                assert isinstance(total_count, int), (
+                    f"Total count should be int for filter {filter_obj}"
+                )
 
                 # Contract: Total count should be >= returned count
-                assert (
-                    total_count >= len(matrices)
-                ), f"Total {total_count} < returned {len(matrices)} for filter {filter_obj}"
+                assert total_count >= len(matrices), (
+                    f"Total {total_count} < returned {len(matrices)} for filter {filter_obj}"
+                )
 
                 # Contract: All returned matrices should match filter
                 for matrix in matrices:
-                    assert filter_obj.matches(
-                        matrix
-                    ), f"Matrix {matrix['group']}/{matrix['name']} doesn't match filter {filter_obj}"
+                    assert filter_obj.matches(matrix), (
+                        f"Matrix {matrix['group']}/{matrix['name']} doesn't match filter {filter_obj}"
+                    )
 
         except Exception as e:
             pytest.skip(f"Filter contract test failed: {e}")
@@ -224,9 +223,9 @@ class TestSuiteSparseAPIContract:
 
             # Contract: URL structure
             assert url.startswith("https://"), f"URL should use HTTPS: {url}"
-            assert (
-                "suitesparse-collection-website.herokuapp.com" in url
-            ), f"URL should point to SuiteSparse: {url}"
+            assert "suitesparse-collection-website.herokuapp.com" in url, (
+                f"URL should point to SuiteSparse: {url}"
+            )
             assert group in url, f"URL should contain group '{group}': {url}"
             assert name in url, f"URL should contain name '{name}': {url}"
 
@@ -234,9 +233,9 @@ class TestSuiteSparseAPIContract:
             if format_type == "mat":
                 assert url.endswith(".mat"), f"MAT URL should end with .mat: {url}"
             else:
-                assert url.endswith(
-                    ".tar.gz"
-                ), f"Compressed format should end with .tar.gz: {url}"
+                assert url.endswith(".tar.gz"), (
+                    f"Compressed format should end with .tar.gz: {url}"
+                )
 
     async def test_checksum_url_contract(self):
         """Test that checksum URLs follow expected patterns."""
@@ -251,21 +250,21 @@ class TestSuiteSparseAPIContract:
             checksum_url = Config.get_checksum_url(group, name, format_type)
 
             # Contract: Checksum URL structure
-            assert checksum_url.startswith(
-                "https://"
-            ), f"Checksum URL should use HTTPS: {checksum_url}"
-            assert (
-                "suitesparse-collection-website.herokuapp.com" in checksum_url
-            ), f"Checksum URL should point to SuiteSparse: {checksum_url}"
-            assert checksum_url.endswith(
-                ".md5"
-            ), f"Checksum URL should end with .md5: {checksum_url}"
-            assert (
-                group in checksum_url
-            ), f"Checksum URL should contain group '{group}': {checksum_url}"
-            assert (
-                name in checksum_url
-            ), f"Checksum URL should contain name '{name}': {checksum_url}"
+            assert checksum_url.startswith("https://"), (
+                f"Checksum URL should use HTTPS: {checksum_url}"
+            )
+            assert "suitesparse-collection-website.herokuapp.com" in checksum_url, (
+                f"Checksum URL should point to SuiteSparse: {checksum_url}"
+            )
+            assert checksum_url.endswith(".md5"), (
+                f"Checksum URL should end with .md5: {checksum_url}"
+            )
+            assert group in checksum_url, (
+                f"Checksum URL should contain group '{group}': {checksum_url}"
+            )
+            assert name in checksum_url, (
+                f"Checksum URL should contain name '{name}': {checksum_url}"
+            )
 
     def test_error_response_contract(self):
         """Test that error responses are handled consistently."""

@@ -120,9 +120,9 @@ class TestCompleteWorkflows:
                 # Step 5: Verify file was created
                 group, name = matrix_id.split("/")
                 expected_file = Path(temp_dir) / f"{name}.mat"
-                assert (
-                    expected_file.exists()
-                ), f"Downloaded file not found: {expected_file}"
+                assert expected_file.exists(), (
+                    f"Downloaded file not found: {expected_file}"
+                )
                 assert expected_file.stat().st_size > 0
 
             except Exception as e:
@@ -163,9 +163,9 @@ class TestCompleteWorkflows:
 
                     if matrices:
                         matrix = matrices[0]
-                        assert filter_obj.matches(
-                            matrix
-                        ), f"Downloaded matrix {name} doesn't match filter"
+                        assert filter_obj.matches(matrix), (
+                            f"Downloaded matrix {name} doesn't match filter"
+                        )
 
             except Exception as e:
                 pytest.skip(f"Bulk download workflow test failed: {e}")

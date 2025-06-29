@@ -98,9 +98,9 @@ class TestErrorHandling:
 
             # _verify_file_checksum returns bool, not raises exception
             result = await downloader._verify_file_checksum(test_file, wrong_checksum)
-            assert (
-                result is False
-            ), "Checksum verification should fail with wrong checksum"
+            assert result is False, (
+                "Checksum verification should fail with wrong checksum"
+            )
 
     def test_client_error_propagation(self):
         """Test that client properly propagates errors from components."""

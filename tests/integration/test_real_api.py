@@ -176,9 +176,9 @@ class TestRealAPIIntegration:
 
             # All requests should succeed
             for i, result in enumerate(results):
-                assert not isinstance(
-                    result, Exception
-                ), f"Request {i} failed: {result}"
+                assert not isinstance(result, Exception), (
+                    f"Request {i} failed: {result}"
+                )
                 assert isinstance(result, list)
 
         except Exception as e:
@@ -230,9 +230,9 @@ class TestRealAPIIntegration:
                 ]:
                     if field in matrix:
                         value = matrix[field]
-                        assert isinstance(
-                            value, int | float
-                        ), f"Non-numeric {field}: {value}"
+                        assert isinstance(value, int | float), (
+                            f"Non-numeric {field}: {value}"
+                        )
                         assert value >= 0, f"Negative {field}: {value}"
 
                 # Boolean fields should be boolean
