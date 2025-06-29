@@ -92,7 +92,11 @@ python_functions = ["test_*"]
 asyncio_mode = "auto"
 markers = [
     "slow: marks tests as slow (requiring network access or file I/O)",
-    "integration: marks tests as integration tests",
+    "integration: marks tests as integration tests with real API calls",
+    "contract: marks tests as contract tests for API response format",
+    "property: marks property-based tests with Hypothesis",
+    "e2e: marks end-to-end workflow tests",
+    "performance: marks performance and load tests",
 ]
 addopts = [
     "--strict-markers",
@@ -107,4 +111,5 @@ dev-dependencies = [
     "mypy>=1.0.0",
     "pytest-cov>=4.0.0",
     "pre-commit>=4.2.0",
+    "hypothesis>=6.135.16",
 ]

@@ -67,9 +67,10 @@ class TestAPIIntegration:
 
         # Test outside async context (should work)
         filter_obj = Filter(n_rows=(None, 50))  # Very small matrices
-        matrices = downloader.list_matrices(filter_obj, limit=3)
+        matrices, total_count = downloader.list_matrices(filter_obj, limit=3)
         # Note: May return empty list if called from async context, which is expected
         assert isinstance(matrices, list)
+        assert isinstance(total_count, int)
 
     @pytest.mark.asyncio
     async def test_group_operations(self):

@@ -112,12 +112,26 @@ class IndexManager:
 
     async def _fetch_csv_index(self) -> list[dict[str, Any]]:
         """Fetch and parse CSV index from remote."""
-        async with httpx.AsyncClient(**Config.get_http_client_config()) as client:
-            response = await client.get(Config.CSV_INDEX_URL)
-            response.raise_for_status()
-            csv_content = response.text
+        try:
+            async with httpx.AsyncClient(**Config.get_http_client_config()) as client:
+                response = await client.get(Config.CSV_INDEX_URL)
+                response.raise_for_status()
+                csv_content = response.text
+        except (httpx.TimeoutException, httpx.ConnectError, httpx.HTTPStatusError) as e:
+            from .exceptions import NetworkError
 
-        return self._parse_csv_content(csv_content)
+            raise NetworkError(f"Failed to fetch CSV index: {e}") from e
+        except Exception as e:
+            from .exceptions import IndexError
+
+            raise IndexError(f"Error fetching CSV index: {e}") from e
+
+        try:
+            return self._parse_csv_content(csv_content)
+        except Exception as e:
+            from .exceptions import IndexError
+
+            raise IndexError(f"Error parsing CSV content: {e}") from e
 
     def _parse_csv_content(self, csv_content: str) -> list[dict[str, Any]]:
         """Parse CSV content into matrix dictionaries."""

@@ -251,7 +251,7 @@ class SuiteSparseDownloader:
         self,
         filter_obj: Filter | None = None,
         limit: int | None = None,
-    ) -> list[dict[str, Any]]:
+    ) -> tuple[list[dict[str, Any]], int]:
         """List matrices matching filter criteria (synchronous version).
 
         Args:
@@ -259,7 +259,9 @@ class SuiteSparseDownloader:
             limit: Maximum number of results
 
         Returns:
-            List of matching matrix metadata dictionaries
+            Tuple of (limited results, total count) where:
+            - limited results: List of matrix metadata (up to limit)
+            - total count: Total number of matching matrices
         """
         try:
             # Check if we're already in an event loop
@@ -274,7 +276,7 @@ class SuiteSparseDownloader:
                 stacklevel=2,
             )
             # Return empty list to avoid blocking
-            return []
+            return [], 0
         except RuntimeError:
             # No event loop running, safe to use asyncio.run
             return asyncio.run(self._list_matrices_async(filter_obj, limit))
@@ -283,11 +285,12 @@ class SuiteSparseDownloader:
         self,
         filter_obj: Filter | None = None,
         limit: int | None = None,
-    ) -> list[dict[str, Any]]:
+    ) -> tuple[list[dict[str, Any]], int]:
         """Async version of list_matrices."""
         matrices = await self.find_matrices(filter_obj)
+        total_count = len(matrices)
 
         if limit is not None:
             matrices = matrices[:limit]
 
-        return matrices
+        return matrices, total_count
