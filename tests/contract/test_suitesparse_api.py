@@ -223,8 +223,14 @@ class TestSuiteSparseAPIContract:
 
             # Contract: URL structure
             assert url.startswith("https://"), f"URL should use HTTPS: {url}"
-            assert "suitesparse-collection-website.herokuapp.com" in url, (
-                f"URL should point to SuiteSparse: {url}"
+
+            # Secure hostname validation
+            from urllib.parse import urlparse
+
+            parsed_url = urlparse(url)
+            expected_hostname = "suitesparse-collection-website.herokuapp.com"
+            assert parsed_url.hostname == expected_hostname, (
+                f"URL should point to SuiteSparse hostname '{expected_hostname}', got '{parsed_url.hostname}': {url}"
             )
             assert group in url, f"URL should contain group '{group}': {url}"
             assert name in url, f"URL should contain name '{name}': {url}"
@@ -253,8 +259,14 @@ class TestSuiteSparseAPIContract:
             assert checksum_url.startswith("https://"), (
                 f"Checksum URL should use HTTPS: {checksum_url}"
             )
-            assert "suitesparse-collection-website.herokuapp.com" in checksum_url, (
-                f"Checksum URL should point to SuiteSparse: {checksum_url}"
+
+            # Secure hostname validation
+            from urllib.parse import urlparse
+
+            parsed_checksum_url = urlparse(checksum_url)
+            expected_hostname = "suitesparse-collection-website.herokuapp.com"
+            assert parsed_checksum_url.hostname == expected_hostname, (
+                f"Checksum URL should point to SuiteSparse hostname '{expected_hostname}', got '{parsed_checksum_url.hostname}': {checksum_url}"
             )
             assert checksum_url.endswith(".md5"), (
                 f"Checksum URL should end with .md5: {checksum_url}"
