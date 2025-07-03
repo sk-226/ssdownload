@@ -8,44 +8,59 @@ files from the SuiteSparse Matrix Collection with advanced features:
 - Progress tracking integration with Rich progress bars
 - Configurable timeout and retry behavior
 - Efficient streaming downloads with chunked reading
+- Automatic extraction of tar.gz archives for MM/RB formats
+- Secure archive validation to prevent path traversal attacks
 
 Example:
     >>> from ssdownload.downloader import FileDownloader
     >>> from pathlib import Path
     >>>
-    >>> downloader = FileDownloader(verify_checksums=True)
+    >>> downloader = FileDownloader(verify_checksums=True, extract_archives=True)
     >>> success = await downloader.download_file(
-    ...     "https://example.com/matrix.mat",
-    ...     Path("./matrix.mat"),
-    ...     expected_md5="abc123def456"
+    ...     "https://example.com/matrix.tar.gz",
+    ...     Path("./matrix.tar.gz"),
+    ...     expected_md5="abc123def456",
+    ...     format_type="mm"
     ... )
 
 The downloader creates temporary .part files during download and only moves
 them to the final location after successful completion and verification.
+For compressed formats (MM/RB), archives are automatically extracted.
 """
 
 import hashlib
+import tarfile
 from pathlib import Path
 
 import httpx
 from rich.progress import Progress, TaskID
 
 from .config import Config
-from .exceptions import ChecksumError
+from .exceptions import ChecksumError, DownloadError
 
 
 class FileDownloader:
     """Handles file downloading with resume support and checksum verification."""
 
-    def __init__(self, verify_checksums: bool = True, timeout: float | None = None):
+    def __init__(
+        self,
+        verify_checksums: bool = True,
+        timeout: float | None = None,
+        extract_archives: bool = True,
+        keep_archives: bool = False,
+    ):
         """Initialize the file downloader.
 
         Args:
             verify_checksums: Whether to verify file checksums after download
             timeout: HTTP request timeout in seconds
+            extract_archives: Whether to automatically extract tar.gz files
+            keep_archives: Whether to keep original tar.gz files after extraction
         """
         self.verify_checksums = verify_checksums
         self.timeout = timeout or Config.DEFAULT_TIMEOUT
+        self.extract_archives = extract_archives
+        self.keep_archives = keep_archives
 
     async def download_file(
         self,
@@ -54,8 +69,9 @@ class FileDownloader:
         expected_md5: str | None = None,
         progress: Progress | None = None,
         task_id: TaskID | None = None,
-    ) -> bool:
-        """Download a single file with resume support.
+        format_type: str = "mat",
+    ) -> Path:
+        """Download a single file with resume support and optional extraction.
 
         Args:
             url: URL to download
@@ -63,9 +79,10 @@ class FileDownloader:
             expected_md5: Expected MD5 checksum
             progress: Rich progress instance
             task_id: Progress task ID
+            format_type: File format ("mat", "mm", "rb")
 
         Returns:
-            True if download successful
+            Path to the final file (extracted file if archive was extracted)
         """
         output_path.parent.mkdir(parents=True, exist_ok=True)
         temp_path = output_path.with_suffix(output_path.suffix + ".part")
@@ -79,7 +96,12 @@ class FileDownloader:
                         progress.update(
                             task_id, completed=100, description=f"✓ {output_path.name}"
                         )
-                    return True
+                    # For compressed formats, check if extraction is needed
+                    if format_type in ["mm", "rb"] and self.extract_archives:
+                        return await self._handle_extraction(
+                            output_path, format_type, progress, task_id
+                        )
+                    return output_path
                 # If checksum verification fails, we'll re-download
             else:
                 # No checksum available, but file exists - assume it's valid
@@ -89,7 +111,12 @@ class FileDownloader:
                         completed=100,
                         description=f"✓ {output_path.name} (existing)",
                     )
-                return True
+                # For compressed formats, check if extraction is needed
+                if format_type in ["mm", "rb"] and self.extract_archives:
+                    return await self._handle_extraction(
+                        output_path, format_type, progress, task_id
+                    )
+                return output_path
 
         # Clean up any orphaned .part files from previous failed downloads
         # Only clean up old, likely stale files to prevent interference with tests
@@ -117,7 +144,13 @@ class FileDownloader:
         if progress and task_id:
             progress.update(task_id, description=f"✓ {output_path.name}")
 
-        return True
+        # Handle extraction for compressed formats
+        if format_type in ["mm", "rb"] and self.extract_archives:
+            return await self._handle_extraction(
+                output_path, format_type, progress, task_id
+            )
+
+        return output_path
 
     async def _download_with_resume(
         self,
@@ -222,3 +255,155 @@ class FileDownloader:
             pass  # Checksum not available
 
         return None
+
+    async def _handle_extraction(
+        self,
+        archive_path: Path,
+        format_type: str,
+        progress: Progress | None = None,
+        task_id: TaskID | None = None,
+    ) -> Path:
+        """Handle archive extraction for compressed formats.
+
+        Args:
+            archive_path: Path to the archive file
+            format_type: File format ("mm", "rb")
+            progress: Rich progress instance
+            task_id: Progress task ID
+
+        Returns:
+            Path to the extracted main file
+        """
+        if progress and task_id:
+            progress.update(task_id, description=f"📂 Extracting {archive_path.name}")
+
+        try:
+            extracted_path = await self._extract_archive(archive_path)
+
+            # Handle archive cleanup based on keep_archives setting
+            if not self.keep_archives:
+                if progress and task_id:
+                    progress.update(
+                        task_id, description=f"🗑️  Removing archive {archive_path.name}"
+                    )
+                archive_path.unlink()
+            else:
+                if progress and task_id:
+                    progress.update(
+                        task_id, description=f"💾 Keeping archive {archive_path.name}"
+                    )
+
+            if progress and task_id:
+                progress.update(
+                    task_id, description=f"✅ Extracted {extracted_path.name}"
+                )
+
+            return extracted_path
+
+        except Exception as e:
+            raise DownloadError(f"Failed to extract {archive_path.name}: {e}") from e
+
+    async def _extract_archive(self, archive_path: Path) -> Path:
+        """Extract tar.gz archive and return path to the main file.
+
+        Args:
+            archive_path: Path to the tar.gz archive
+
+        Returns:
+            Path to the extracted main file
+        """
+        extract_dir = archive_path.parent
+        temp_files = []
+
+        try:
+            with tarfile.open(archive_path, "r:gz") as tar:
+                # Security validation: prevent path traversal attacks
+                self._validate_tar_members(tar)
+
+                # Record files that will be extracted for cleanup on error
+                temp_files = [
+                    extract_dir / member.name
+                    for member in tar.getmembers()
+                    if member.isfile()
+                ]
+
+                # Extract all files
+                tar.extractall(path=extract_dir)
+
+                # Find extracted files that actually exist
+                extracted_files = [f for f in temp_files if f.exists() and f.is_file()]
+
+                if not extracted_files:
+                    raise DownloadError("No files were extracted from archive")
+
+                # Find the main matrix file
+                main_file = self._find_main_file(extracted_files)
+                return main_file
+
+        except Exception as e:
+            # Cleanup partially extracted files on error
+            for temp_file in temp_files:
+                if temp_file.exists():
+                    try:
+                        temp_file.unlink()
+                    except OSError:
+                        pass  # Ignore cleanup failures
+
+            if isinstance(e, DownloadError):
+                raise
+            raise DownloadError(f"Archive extraction failed: {e}") from e
+
+    def _validate_tar_members(self, tar: tarfile.TarFile) -> None:
+        """Validate tar members for security (prevent path traversal).
+
+        Args:
+            tar: TarFile object to validate
+
+        Raises:
+            DownloadError: If unsafe tar members are found
+        """
+        for member in tar.getmembers():
+            # Check for absolute paths
+            if member.name.startswith("/"):
+                raise DownloadError(
+                    f"Unsafe tar member with absolute path: {member.name}"
+                )
+
+            # Check for parent directory references
+            if ".." in member.name:
+                raise DownloadError(
+                    f"Unsafe tar member with parent reference: {member.name}"
+                )
+
+            # Check for excessively long paths
+            if len(member.name) > 255:
+                raise DownloadError(f"Tar member name too long: {member.name}")
+
+    def _find_main_file(self, extracted_files: list[Path]) -> Path:
+        """Find the main matrix file from extracted files.
+
+        Args:
+            extracted_files: List of extracted file paths
+
+        Returns:
+            Path to the main matrix file
+        """
+        # Priority order for file selection
+        patterns = [
+            "*.mtx",  # Matrix Market format
+            "*.rua",  # Rutherford Boeing format
+            "*.rb",  # Rutherford Boeing format alternative
+            "*",  # Any other file
+        ]
+
+        for pattern in patterns:
+            matches = [f for f in extracted_files if f.match(pattern)]
+            if matches:
+                # If multiple matches, return the largest file
+                return max(matches, key=lambda f: f.stat().st_size)
+
+        # Fallback: return the largest file
+        if extracted_files:
+            return max(extracted_files, key=lambda f: f.stat().st_size)
+
+        raise DownloadError("No suitable main file found in extracted archive")

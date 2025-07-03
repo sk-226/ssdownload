@@ -190,13 +190,13 @@ class TestSuiteSparseDownloader:
         # Mock file downloader
         mock_downloader_instance = mock_file_downloader.return_value
         mock_downloader_instance.get_checksum = AsyncMock(return_value="abc123")
-        mock_downloader_instance.download_file = AsyncMock(return_value=True)
+        expected_path = temp_cache_dir / "Boeing" / "ct20stif.mat"
+        mock_downloader_instance.download_file = AsyncMock(return_value=expected_path)
 
         downloader = SuiteSparseDownloader(cache_dir=temp_cache_dir)
 
         result = await downloader.download("Boeing", "ct20stif")
 
-        expected_path = temp_cache_dir / "Boeing" / "ct20stif.mat"
         assert result == expected_path
 
         # Verify file downloader was called correctly

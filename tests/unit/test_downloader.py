@@ -189,7 +189,7 @@ class TestFileDownloader:
             "http://example.com/file", output_path, expected_md5
         )
 
-        assert result is True
+        assert result == output_path
         assert output_path.exists()
         assert output_path.read_bytes() == content
 
@@ -242,7 +242,7 @@ class TestFileDownloader:
             "http://example.com/file", output_path, "valid_checksum"
         )
 
-        assert result is True
+        assert result == output_path
         assert output_path.exists()
         assert output_path.read_bytes() == content
         assert not temp_path.exists()  # Temp file should be moved
@@ -270,6 +270,6 @@ class TestFileDownloader:
             "any_checksum",  # Should be ignored
         )
 
-        assert result is True
+        assert result == output_path
         assert output_path.exists()
         assert output_path.read_bytes() == content

@@ -39,12 +39,19 @@ def download(
         4, "--workers", "-w", help="Number of concurrent workers"
     ),
     verify: bool = typer.Option(False, "--verify", help="Enable checksum verification"),
+    keep_archive: bool = typer.Option(
+        False,
+        "--keep-archive",
+        help="Keep original tar.gz files after extraction (MM/RB formats)",
+    ),
 ):
     """Download a single matrix by name (auto-detects group) or by group/name."""
     downloader = SuiteSparseDownloader(
         cache_dir=output,
         workers=workers,
         verify_checksums=verify,
+        extract_archives=True,  # Always extract by default
+        keep_archives=keep_archive,
     )
 
     try:
@@ -152,6 +159,11 @@ def bulk(
         None, "--max-files", help="Maximum number of files to download"
     ),
     verify: bool = typer.Option(False, "--verify", help="Enable checksum verification"),
+    keep_archive: bool = typer.Option(
+        False,
+        "--keep-archive",
+        help="Keep original tar.gz files after extraction (MM/RB formats)",
+    ),
 ):
     """Download multiple matrices matching filter criteria."""
     # Build filter
@@ -172,6 +184,8 @@ def bulk(
         cache_dir=output,
         workers=workers,
         verify_checksums=verify,
+        extract_archives=True,  # Always extract by default
+        keep_archives=keep_archive,
     )
 
     try:
