@@ -279,6 +279,99 @@ Fix for incorrect matrix information and data inconsistencies in `ssdl info` com
 - [ ] **SPD filtering works correctly**: `ssdl list --spd` returns only symmetric positive definite matrices
 - [ ] **Official CSV integration**: Data comes from correct `sparse.tamu.edu/files/ssstats.csv` source
 
+## New Feature Requirements - Download Structure Enhancement
+
+### 🎯 **Feature 1: Flat Download Structure Option**
+**Problem**: Current behavior downloads to `output_dir/group/matrix_data` structure
+**Solution**: Add option to download directly to `output_dir/matrix_data`
+
+#### Implementation Details:
+- [ ] **Add `--flat` or `--no-group-dir` CLI option**
+  - [ ] Add flag to download command: `ssdl download ct20stif --flat`
+  - [ ] Skip group directory creation when flag is enabled
+  - [ ] Download directly to output_dir/matrix_data instead of output_dir/group/matrix_data
+- [ ] **Update FileDownloader logic**
+  - [ ] Modify path construction in downloader.py
+  - [ ] Handle both flat and hierarchical directory structures
+  - [ ] Ensure file naming conflicts are handled appropriately
+- [ ] **Add configuration support**
+  - [ ] Add default behavior setting in config.py
+  - [ ] Allow users to set flat downloads as default
+  - [ ] Environment variable support: `SSDOWNLOAD_FLAT_DOWNLOADS=true`
+
+### 🎯 **Feature 2: Automatic Archive Extraction**
+**Problem**: MM and RB formats download as tar.gz files requiring manual extraction
+**Solution**: Auto-extract tar.gz files and optionally clean up archives
+
+#### Implementation Details:
+- [ ] **Add automatic extraction for compressed formats**
+  - [ ] Extract tar.gz files automatically after download
+  - [ ] Support for both MM (Matrix Market) and RB (Rutherford Boeing) formats
+  - [ ] Place extracted files in appropriate directory structure
+- [ ] **Add extraction control options**
+  - [ ] `--extract/--no-extract` flag (default: extract)
+  - [ ] `--keep-archive/--remove-archive` flag (default: remove)
+  - [ ] `--extract-to-flat` combines with flat structure option
+- [ ] **Update extraction logic**
+  - [ ] Integrate with existing FileDownloader
+  - [ ] Handle extraction errors gracefully
+  - [ ] Verify extracted file integrity
+  - [ ] Clean up temporary files on failure
+
+### 🎯 **Feature 3: Combined Flat + Extraction Workflow**
+**Goal**: Seamless user experience with `output_dir/matrix_data` for all formats
+
+#### Implementation Details:
+- [ ] **Unified download behavior**
+  - [ ] MAT format: Direct download to output_dir/matrix_data
+  - [ ] MM/RB format: Download tar.gz → extract → place in output_dir/matrix_data
+  - [ ] Consistent final structure regardless of format
+- [ ] **Smart file handling**
+  - [ ] Detect and handle file name conflicts
+  - [ ] Preserve original file permissions
+  - [ ] Validate extracted file integrity
+- [ ] **User experience improvements**
+  - [ ] Progress indicators for extraction
+  - [ ] Clear logging of extraction activities
+  - [ ] Error messages for extraction failures
+
+### 🎯 **Feature 4: CLI Integration**
+**Goal**: Intuitive command-line interface for new options
+
+#### Implementation Details:
+- [ ] **New CLI options**
+  ```bash
+  ssdl download ct20stif --flat --extract
+  ssdl download Boeing/ct20stif --flat --no-extract --keep-archive
+  ssdl bulk --spd --format mm --flat --extract --limit 10
+  ```
+- [ ] **Option combinations**
+  - [ ] `--flat`: Download to output_dir/matrix_data (no group subdirectory)
+  - [ ] `--extract`: Auto-extract tar.gz files (default for mm/rb)
+  - [ ] `--keep-archive`: Keep original tar.gz after extraction
+  - [ ] `--remove-archive`: Remove tar.gz after extraction (default)
+- [ ] **Help text updates**
+  - [ ] Update CLI help to explain new options
+  - [ ] Add examples for common use cases
+  - [ ] Document format-specific behavior differences
+
+### 🎯 **Feature 5: Configuration & Defaults**
+**Goal**: Flexible configuration for different user preferences
+
+#### Implementation Details:
+- [ ] **Configuration file support**
+  - [ ] Add settings to config.py for default behavior
+  - [ ] Support for per-format extraction settings
+  - [ ] User-specific configuration overrides
+- [ ] **Environment variables**
+  - [ ] `SSDOWNLOAD_FLAT_DOWNLOADS=true/false`
+  - [ ] `SSDOWNLOAD_AUTO_EXTRACT=true/false`
+  - [ ] `SSDOWNLOAD_KEEP_ARCHIVES=true/false`
+- [ ] **Backward compatibility**
+  - [ ] Maintain existing behavior as default
+  - [ ] Graceful handling of configuration migrations
+  - [ ] Clear documentation of behavior changes
+
 ## Priority Order for Implementation
 
 ### 🚨 **CRITICAL (Fix Immediately)**
@@ -290,13 +383,17 @@ Fix for incorrect matrix information and data inconsistencies in `ssdl info` com
 4. Remove duplicate entries from cache
 5. Add `ssdl clean-cache` command for .part file cleanup
 6. Update all URLs to official sparse.tamu.edu endpoints
+7. **NEW: Implement flat download structure option (--flat)**
+8. **NEW: Add automatic tar.gz extraction for MM/RB formats**
 
 ### 📈 **MEDIUM (Following Sprints)**
-7. Enhanced metadata collection from individual matrix pages
-8. Improved cache management and validation
-9. Extended CLI commands and options
+9. Enhanced metadata collection from individual matrix pages
+10. Improved cache management and validation
+11. Extended CLI commands and options
+12. **NEW: Advanced extraction options (--keep-archive, --remove-archive)**
+13. **NEW: Configuration file support for new download options**
 
 ### 🔧 **LOW (Future Enhancements)**
-10. Performance optimizations
-11. Advanced monitoring and metrics
-12. Background processing features
+14. Performance optimizations
+15. Advanced monitoring and metrics
+16. Background processing features
