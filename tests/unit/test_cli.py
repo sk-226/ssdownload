@@ -71,6 +71,8 @@ class TestCLI:
             cache_dir=None,
             workers=2,
             verify_checksums=False,
+            extract_archives=True,
+            keep_archives=False,
         )
 
         # Verify download method was called
@@ -141,6 +143,8 @@ class TestCLI:
             cache_dir=None,
             workers=8,
             verify_checksums=False,
+            extract_archives=True,
+            keep_archives=False,
         )
 
     @patch("ssdownload.cli.SuiteSparseDownloader")

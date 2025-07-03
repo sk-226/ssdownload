@@ -29,6 +29,8 @@ class SuiteSparseDownloader:
         workers: int = Config.DEFAULT_WORKERS,
         timeout: float = Config.DEFAULT_TIMEOUT,
         verify_checksums: bool = False,
+        extract_archives: bool = True,
+        keep_archives: bool = False,
     ):
         """Initialize the downloader.
 
@@ -39,6 +41,8 @@ class SuiteSparseDownloader:
             workers: Number of concurrent download workers
             timeout: HTTP request timeout in seconds
             verify_checksums: Whether to verify file checksums after download (default: False)
+            extract_archives: Whether to automatically extract tar.gz files (default: True)
+            keep_archives: Whether to keep original tar.gz files after extraction (default: False)
         """
         self.cache_dir = Path(cache_dir or Path.cwd())
         self.cache_dir.mkdir(parents=True, exist_ok=True)
@@ -46,12 +50,19 @@ class SuiteSparseDownloader:
         self.workers = min(workers, Config.MAX_WORKERS)
         self.timeout = timeout
         self.verify_checksums = verify_checksums
+        self.extract_archives = extract_archives
+        self.keep_archives = keep_archives
 
         self.console = Console()
         # IndexManager uses system cache by default, but can be overridden for downloads
         index_cache_dir = None if cache_dir is None else self.cache_dir
         self.index_manager = IndexManager(index_cache_dir)
-        self.file_downloader = FileDownloader(verify_checksums, timeout)
+        self.file_downloader = FileDownloader(
+            verify_checksums=verify_checksums,
+            timeout=timeout,
+            extract_archives=extract_archives,
+            keep_archives=keep_archives,
+        )
 
     async def download(
         self,
@@ -103,24 +114,26 @@ class SuiteSparseDownloader:
             ) as progress:
                 task = progress.add_task(f"Downloading {name}", total=100)
 
-                await self.file_downloader.download_file(
+                final_path = await self.file_downloader.download_file(
                     download_url,
                     output_path,
                     expected_md5,
                     progress,
                     task,
+                    format_type,
                 )
         else:
             # Download without progress bar (for bulk downloads)
-            await self.file_downloader.download_file(
+            final_path = await self.file_downloader.download_file(
                 download_url,
                 output_path,
                 expected_md5,
                 None,
                 None,
+                format_type,
             )
 
-        return output_path
+        return final_path
 
     async def _get_available_groups(self):
         """Get all available groups from the index.

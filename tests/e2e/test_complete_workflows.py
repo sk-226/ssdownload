@@ -344,12 +344,17 @@ class TestCompleteWorkflows:
                 # Should have at least one successful download
                 assert len(downloaded_files) > 0
 
-                # Verify file extensions
+                # Verify file extensions (now auto-extracted)
                 for fmt, path in downloaded_files:
                     if fmt == "mat":
                         assert path.suffix == ".mat"
-                    else:
-                        assert path.suffix == ".gz"  # Compressed formats
+                    elif fmt == "mm":
+                        assert path.suffix == ".mtx"  # Auto-extracted Matrix Market
+                    elif fmt == "rb":
+                        assert path.suffix in [
+                            ".rua",
+                            ".rb",
+                        ]  # Auto-extracted Rutherford-Boeing
 
             except Exception as e:
                 pytest.skip(f"Format compatibility workflow test failed: {e}")

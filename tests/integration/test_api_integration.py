@@ -300,7 +300,18 @@ class TestAPIRealDownload:
         mm_path = await downloader.download_by_name(name, "mm")
         assert mm_path.exists()
         assert mm_path.stat().st_size > 0
-        assert mm_path.suffix == ".gz"
+        assert mm_path.suffix == ".mtx"  # Auto-extracted to .mtx file
+
+        # Test backward compatibility: no extraction when extract_archives=False
+        downloader_no_extract = SuiteSparseDownloader(
+            cache_dir=download_dir / "no_extract",
+            verify_checksums=False,
+            extract_archives=False,
+        )
+        mm_path_no_extract = await downloader_no_extract.download_by_name(name, "mm")
+        assert mm_path_no_extract.exists()
+        assert mm_path_no_extract.stat().st_size > 0
+        assert mm_path_no_extract.suffix == ".gz"  # Should remain compressed
 
     @pytest.mark.asyncio
     async def test_real_bulk_download(self, download_dir):
