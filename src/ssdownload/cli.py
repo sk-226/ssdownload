@@ -44,6 +44,11 @@ def download(
         "--keep-archive",
         help="Keep original tar.gz files after extraction (MM/RB formats)",
     ),
+    flat: bool = typer.Option(
+        False,
+        "--flat",
+        help="Save files directly in output directory without group subdirectories",
+    ),
 ):
     """Download a single matrix by name (auto-detects group) or by group/name."""
     downloader = SuiteSparseDownloader(
@@ -52,6 +57,7 @@ def download(
         verify_checksums=verify,
         extract_archives=True,  # Always extract by default
         keep_archives=keep_archive,
+        flat_structure=flat,
     )
 
     try:
@@ -164,6 +170,11 @@ def bulk(
         "--keep-archive",
         help="Keep original tar.gz files after extraction (MM/RB formats)",
     ),
+    flat: bool = typer.Option(
+        False,
+        "--flat",
+        help="Save files directly in output directory without group subdirectories",
+    ),
 ):
     """Download multiple matrices matching filter criteria."""
     # Build filter
@@ -186,6 +197,7 @@ def bulk(
         verify_checksums=verify,
         extract_archives=True,  # Always extract by default
         keep_archives=keep_archive,
+        flat_structure=flat,
     )
 
     try:

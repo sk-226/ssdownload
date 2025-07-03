@@ -73,6 +73,7 @@ class TestCLI:
             verify_checksums=False,
             extract_archives=True,
             keep_archives=False,
+            flat_structure=False,
         )
 
         # Verify download method was called
@@ -145,6 +146,7 @@ class TestCLI:
             verify_checksums=False,
             extract_archives=True,
             keep_archives=False,
+            flat_structure=False,
         )
 
     @patch("ssdownload.cli.SuiteSparseDownloader")
@@ -336,3 +338,50 @@ class TestCLI:
             assert result.exit_code == 0
             assert str(cache_file) in result.stdout
             assert "KB" in result.stdout or "MB" in result.stdout
+
+    @patch("ssdownload.cli.SuiteSparseDownloader")
+    @patch("ssdownload.cli.asyncio.run")
+    def test_download_with_flat_option(self, mock_asyncio_run, mock_downloader):
+        """Test download command with --flat option."""
+        mock_asyncio_run.return_value = Path("./ct20stif.mat")
+
+        result = self.runner.invoke(app, ["download", "ct20stif", "--flat"])
+
+        assert result.exit_code == 0
+
+        # Verify SuiteSparseDownloader was called with flat_structure=True
+        mock_downloader.assert_called_once()
+        call_kwargs = mock_downloader.call_args.kwargs
+        assert call_kwargs["flat_structure"] is True
+
+    @patch("ssdownload.cli.SuiteSparseDownloader")
+    @patch("ssdownload.cli.asyncio.run")
+    def test_bulk_with_flat_option(self, mock_asyncio_run, mock_downloader):
+        """Test bulk command with --flat option."""
+        mock_asyncio_run.return_value = [Path("./matrix1.mat"), Path("./matrix2.mat")]
+
+        result = self.runner.invoke(app, ["bulk", "--spd", "--flat"])
+
+        assert result.exit_code == 0
+
+        # Verify SuiteSparseDownloader was called with flat_structure=True
+        mock_downloader.assert_called_once()
+        call_kwargs = mock_downloader.call_args.kwargs
+        assert call_kwargs["flat_structure"] is True
+
+    @patch("ssdownload.cli.SuiteSparseDownloader")
+    @patch("ssdownload.cli.asyncio.run")
+    def test_download_without_flat_option_default(
+        self, mock_asyncio_run, mock_downloader
+    ):
+        """Test download command without --flat option (default behavior)."""
+        mock_asyncio_run.return_value = Path("./Boeing/ct20stif.mat")
+
+        result = self.runner.invoke(app, ["download", "ct20stif"])
+
+        assert result.exit_code == 0
+
+        # Verify SuiteSparseDownloader was called with flat_structure=False (default)
+        mock_downloader.assert_called_once()
+        call_kwargs = mock_downloader.call_args.kwargs
+        assert call_kwargs["flat_structure"] is False

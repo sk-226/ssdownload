@@ -31,6 +31,7 @@ class SuiteSparseDownloader:
         verify_checksums: bool = False,
         extract_archives: bool = True,
         keep_archives: bool = False,
+        flat_structure: bool = False,
     ):
         """Initialize the downloader.
 
@@ -43,6 +44,7 @@ class SuiteSparseDownloader:
             verify_checksums: Whether to verify file checksums after download (default: False)
             extract_archives: Whether to automatically extract tar.gz files (default: True)
             keep_archives: Whether to keep original tar.gz files after extraction (default: False)
+            flat_structure: Whether to save files directly in output directory without group subdirectories (default: False)
         """
         self.cache_dir = Path(cache_dir or Path.cwd())
         self.cache_dir.mkdir(parents=True, exist_ok=True)
@@ -52,6 +54,7 @@ class SuiteSparseDownloader:
         self.verify_checksums = verify_checksums
         self.extract_archives = extract_archives
         self.keep_archives = keep_archives
+        self.flat_structure = flat_structure
 
         self.console = Console()
         # IndexManager uses system cache by default, but can be overridden for downloads
@@ -91,7 +94,10 @@ class SuiteSparseDownloader:
 
         # Determine output path
         ext = Config.get_file_extension(format_type)
-        output_path = output_dir / group / f"{name}{ext}"
+        if self.flat_structure:
+            output_path = output_dir / f"{name}{ext}"
+        else:
+            output_path = output_dir / group / f"{name}{ext}"
 
         # Get download URL and checksum
         download_url = Config.get_matrix_url(group, name, format_type)
