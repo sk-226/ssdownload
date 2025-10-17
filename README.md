@@ -2,8 +2,6 @@
 
 **Modern Python tool for downloading sparse matrices from the [SuiteSparse Matrix Collection](https://sparse.tamu.edu/)**
 
-> ⚠️ **This project is under active development.** APIs and features may change without notice.
-
 A command-line tool and Python library that makes it easy to discover, download, and work with sparse matrices from the world's largest collection of sparse matrix data.
 
 ## ✨ Features
@@ -18,6 +16,12 @@ A command-line tool and Python library that makes it easy to discover, download,
 - 🔧 **Type Safety** - Full type hints for better IDE support
 
 ## 🚀 Quick Start
+
+```bash
+uvx --from ssdownload ssdl -h
+```
+
+The CLI is exposed via `uvx`, so you can reach it without a prior tool install.
 
 ### Installation
 
