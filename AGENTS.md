@@ -23,6 +23,6 @@ All dev commands are documented in `CLAUDE.md` and `docs/DEVELOPMENT.md`. Key on
 - **Python 3.12+ required** — the codebase uses `X | Y` union syntax and other 3.12 features.
 - The `list` CLI command function shadows Python's built-in `list` type. Use `builtins.list` for type annotations in that scope.
 - **Two-phase filtering**: When page-scraped filter options (e.g. `--cond`, `--norm`, `--cholesky`) are used, the system first filters by CSV index data, then scrapes individual matrix web pages for extended metadata. This can be slow for large candidate sets.
-- **Page data caching**: Scraped page data is cached as `page_info_cache.json` in the cache directory (24h TTL). The CSV index is cached as `ssstats_cache.json` (1h TTL).
+- **Page data caching**: Scraped page data is cached as `page_info_cache.json` in the cache directory (1-year TTL — page data rarely changes). The CSV index is cached as `ssstats_cache.json` (1h TTL). Both caches can be cleared with `ssdl clean-cache`.
 - Unit tests run fully offline using mocks (`pytest-httpx`). Integration/contract/e2e tests require network access to `sparse.tamu.edu`.
 - `beautifulsoup4` is a runtime dependency used for page scraping (not just dev tooling).

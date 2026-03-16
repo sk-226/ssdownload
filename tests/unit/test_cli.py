@@ -292,7 +292,7 @@ class TestCLI:
             result = self.runner.invoke(app, ["clean-cache", "--yes"])
 
             assert result.exit_code == 0
-            assert "No cache file found" in result.stdout
+            assert "No cache files found" in result.stdout
             assert "cache is already clean" in result.stdout
 
     @patch("ssdownload.cli.Config.get_default_cache_dir")
@@ -312,10 +312,8 @@ class TestCLI:
             result = self.runner.invoke(app, ["clean-cache", "--yes"])
 
             assert result.exit_code == 0
-            assert "Cache cleared successfully" in result.stdout
-            assert (
-                "Next matrix operation will download fresh index data" in result.stdout
-            )
+            assert "CSV index cache cleared" in result.stdout
+            assert "Next operation will download fresh data" in result.stdout
             assert not cache_file.exists()
 
     @patch("ssdownload.cli.Config.get_default_cache_dir")

@@ -23,7 +23,7 @@ class PageScraper:
 
     MATRIX_PAGE_URL = "https://sparse.tamu.edu"
     PAGE_CACHE_FILENAME = "page_info_cache.json"
-    PAGE_CACHE_TTL = 86400  # 24 hours (page data rarely changes)
+    PAGE_CACHE_TTL = 365 * 86400  # 1 year (page data rarely changes)
 
     # Mapping from table header text to standardized field names
     STRUCTURAL_FIELDS = {

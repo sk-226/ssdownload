@@ -642,26 +642,31 @@ def info(
 def clean_cache(
     confirm: bool = typer.Option(False, "--yes", "-y", help="Skip confirmation prompt"),
 ):
-    """Clear the system cache (matrix index cache)."""
+    """Clear the system cache (matrix index and page info caches)."""
 
-    # Get the cache directory and cache file
     cache_dir = Config.get_default_cache_dir()
-    cache_file = cache_dir / "ssstats_cache.json"
+    cache_files = [
+        ("CSV index cache", cache_dir / "ssstats_cache.json"),
+        ("Page info cache", cache_dir / PageScraper.PAGE_CACHE_FILENAME),
+    ]
 
-    if not cache_file.exists():
-        console.print("✓ No cache file found - cache is already clean", style="green")
+    existing = [(label, f) for label, f in cache_files if f.exists()]
+
+    if not existing:
+        console.print("✓ No cache files found - cache is already clean", style="green")
         return
 
     # Show cache info
-    cache_size = cache_file.stat().st_size
-    cache_size_str = (
-        f"{cache_size / 1024:.1f} KB"
-        if cache_size < 1024 * 1024
-        else f"{cache_size / (1024 * 1024):.1f} MB"
-    )
-
-    console.print(f"Cache file: {cache_file}")
-    console.print(f"Cache size: {cache_size_str}")
+    total_size = 0
+    for label, cache_file in existing:
+        size = cache_file.stat().st_size
+        total_size += size
+        size_str = (
+            f"{size / 1024:.1f} KB"
+            if size < 1024 * 1024
+            else f"{size / (1024 * 1024):.1f} MB"
+        )
+        console.print(f"  {label}: {cache_file} ({size_str})")
 
     # Confirm deletion
     if not confirm:
@@ -670,13 +675,12 @@ def clean_cache(
             console.print("Cache cleanup cancelled", style="yellow")
             return
 
-    # Delete the cache file
+    # Delete cache files
     try:
-        cache_file.unlink()
-        console.print("✓ Cache cleared successfully", style="green")
-        console.print(
-            "Next matrix operation will download fresh index data", style="dim"
-        )
+        for label, cache_file in existing:
+            cache_file.unlink()
+            console.print(f"✓ {label} cleared", style="green")
+        console.print("Next operation will download fresh data as needed", style="dim")
     except Exception as e:
         console.print(f"✗ Error clearing cache: {e}", style="red")
         raise typer.Exit(1) from e
