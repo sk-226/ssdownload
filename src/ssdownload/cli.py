@@ -1,6 +1,10 @@
 """Command-line interface for SuiteSparse Matrix Collection Downloader."""
 
+from __future__ import annotations
+
 import asyncio
+import builtins
+from typing import Any
 
 import typer
 from rich.console import Console
@@ -10,6 +14,7 @@ from .cli_utils import build_filter
 from .client import SuiteSparseDownloader
 from .config import Config
 from .filters import Filter
+from .page_scraper import PageScraper
 
 app = typer.Typer(
     name="ssdl",
@@ -152,6 +157,30 @@ def bulk(
     name: str | None = typer.Option(None, "--name", help="Matrix name pattern"),
     kind: str | None = typer.Option(None, "--kind", help="Matrix kind"),
     structure: str | None = typer.Option(None, "--structure", help="Matrix structure"),
+    condition_number: str | None = typer.Option(
+        None, "--cond", help="Condition number range (e.g., ':1e4' or '1e2:1e6')"
+    ),
+    matrix_norm: str | None = typer.Option(
+        None, "--norm", help="Matrix 2-norm range (e.g., ':1e5')"
+    ),
+    numerical_rank: str | None = typer.Option(
+        None, "--rank", help="Numerical rank range"
+    ),
+    null_space_dim: str | None = typer.Option(
+        None, "--null-dim", help="Null space dimension range"
+    ),
+    num_strong_components: str | None = typer.Option(
+        None, "--scc", help="Number of strongly connected components range"
+    ),
+    num_dmperm_blocks: str | None = typer.Option(
+        None, "--dmperm-blocks", help="Number of Dmperm blocks range"
+    ),
+    structural_rank_opt: str | None = typer.Option(
+        None, "--structural-rank", help="Structural rank range"
+    ),
+    cholesky: bool | None = typer.Option(
+        None, "--cholesky/--no-cholesky", help="Filter by Cholesky candidate status"
+    ),
     format: str = typer.Option(
         "mat", "--format", "-f", help="File format (mat, mm, rb)"
     ),
@@ -189,6 +218,14 @@ def bulk(
         name=name,
         kind=kind,
         structure=structure,
+        condition_number=condition_number,
+        matrix_norm=matrix_norm,
+        numerical_rank=numerical_rank,
+        null_space_dim=null_space_dim,
+        num_strong_components=num_strong_components,
+        num_dmperm_blocks=num_dmperm_blocks,
+        structural_rank=structural_rank_opt,
+        cholesky_candidate=cholesky,
     )
 
     downloader = SuiteSparseDownloader(
@@ -230,6 +267,30 @@ def list(
     name: str | None = typer.Option(None, "--name", help="Matrix name pattern"),
     kind: str | None = typer.Option(None, "--kind", help="Matrix kind"),
     structure: str | None = typer.Option(None, "--structure", help="Matrix structure"),
+    condition_number: str | None = typer.Option(
+        None, "--cond", help="Condition number range (e.g., ':1e4' or '1e2:1e6')"
+    ),
+    matrix_norm: str | None = typer.Option(
+        None, "--norm", help="Matrix 2-norm range (e.g., ':1e5')"
+    ),
+    numerical_rank: str | None = typer.Option(
+        None, "--rank", help="Numerical rank range"
+    ),
+    null_space_dim: str | None = typer.Option(
+        None, "--null-dim", help="Null space dimension range"
+    ),
+    num_strong_components: str | None = typer.Option(
+        None, "--scc", help="Number of strongly connected components range"
+    ),
+    num_dmperm_blocks: str | None = typer.Option(
+        None, "--dmperm-blocks", help="Number of Dmperm blocks range"
+    ),
+    structural_rank_opt: str | None = typer.Option(
+        None, "--structural-rank", help="Structural rank range"
+    ),
+    cholesky: bool | None = typer.Option(
+        None, "--cholesky/--no-cholesky", help="Filter by Cholesky candidate status"
+    ),
     limit: int | None = typer.Option(
         20, "--limit", "-l", help="Maximum number of results"
     ),
@@ -250,12 +311,32 @@ def list(
         name=name,
         kind=kind,
         structure=structure,
+        condition_number=condition_number,
+        matrix_norm=matrix_norm,
+        numerical_rank=numerical_rank,
+        null_space_dim=null_space_dim,
+        num_strong_components=num_strong_components,
+        num_dmperm_blocks=num_dmperm_blocks,
+        structural_rank=structural_rank_opt,
+        cholesky_candidate=cholesky,
     )
 
     downloader = SuiteSparseDownloader()
 
     try:
-        matrices, total_count = downloader.list_matrices(filter_obj, limit)
+        needs_page = filter_obj is not None and filter_obj.requires_page_data()
+
+        if needs_page and filter_obj is not None:
+            # Two-phase filtering: CSV first, then page scraping
+            page_results = asyncio.run(
+                _list_with_page_filter(downloader, filter_obj, limit)
+            )
+            total_count = len(page_results)
+            if limit is not None:
+                page_results = page_results[:limit]
+            matrices = page_results
+        else:
+            matrices, total_count = downloader.list_matrices(filter_obj, limit)
 
         if not matrices:
             console.print("No matrices found matching criteria")
@@ -278,11 +359,15 @@ def list(
             table.add_column("NNZ", justify="right")
             table.add_column("Field", style="blue")
             table.add_column("SPD", justify="center")
+            if needs_page:
+                table.add_column("Cond#", justify="right", style="yellow")
         else:
             table.add_column("Group/Name", style="cyan")
             table.add_column("Size", justify="right")
             table.add_column("NNZ", justify="right")
             table.add_column("Field", style="blue")
+            if needs_page:
+                table.add_column("Cond#", justify="right", style="yellow")
 
         for matrix in matrices:
             group = matrix.get("group", "")
@@ -292,9 +377,11 @@ def list(
             nnz = matrix.get("nnz", matrix.get("nonzeros", 0))
             field = matrix.get("field", "")
             spd_flag = matrix.get("spd", False)
+            cond = matrix.get("condition_number")
+            cond_str = f"{cond:.2e}" if cond is not None else ""
 
             if verbose:
-                table.add_row(
+                row_data = [
                     group,
                     name,
                     str(rows),
@@ -302,21 +389,65 @@ def list(
                     str(nnz),
                     field,
                     "✓" if spd_flag else "",
-                )
+                ]
+                if needs_page:
+                    row_data.append(cond_str)
+                table.add_row(*row_data)
             else:
                 size_str = f"{rows}×{cols}" if rows and cols else ""
-                table.add_row(
+                row_data = [
                     f"{group}/{name}",
                     size_str,
                     str(nnz) if nnz else "",
                     field,
-                )
+                ]
+                if needs_page:
+                    row_data.append(cond_str)
+                table.add_row(*row_data)
 
         console.print(table)
 
     except Exception as e:
         console.print(f"✗ Error: {e}", style="red")
         raise typer.Exit(1) from e
+
+
+async def _list_with_page_filter(
+    downloader: SuiteSparseDownloader,
+    filter_obj: Filter,
+    limit: int | None = None,
+) -> builtins.list[dict[str, Any]]:
+    """Two-phase filtering: CSV-based first, then page-scraping for extended fields."""
+    from .filters import Filter as FilterClass
+
+    # Phase 1: Filter by CSV fields only
+    csv_filter = FilterClass(
+        spd=filter_obj.spd,
+        n_rows=filter_obj.n_rows,
+        n_cols=filter_obj.n_cols,
+        nnz=filter_obj.nnz,
+        field=filter_obj.field,
+        group=filter_obj.group,
+        name=filter_obj.name,
+        kind=filter_obj.kind,
+        posdef=filter_obj.posdef,
+        structure=filter_obj.structure,
+    )
+    csv_candidates = await downloader.find_matrices(csv_filter)
+
+    if not csv_candidates:
+        return []
+
+    console.print(
+        f"[dim]Phase 1: {len(csv_candidates)} candidates from CSV index. "
+        f"Fetching page data for extended filtering...[/dim]"
+    )
+
+    # Phase 2: Enrich with page data and apply full filter
+    scraper = PageScraper(downloader.cache_dir)
+    enriched = await scraper.enrich_matrices(csv_candidates)
+    results = [m for m in enriched if filter_obj.matches(m)]
+    return results
 
 
 @app.command()
@@ -376,6 +507,11 @@ def info(
 
             matrix = matrices[0]
 
+        # Enrich with page data
+        console.print("[dim]Fetching extended info from matrix page...[/dim]")
+        scraper = PageScraper()
+        matrix = asyncio.run(scraper.enrich_matrix_info(matrix))
+
         # Display detailed information
         table = Table(title=f"Matrix Information: {group_name}/{matrix_name}")
         table.add_column("Property", style="cyan")
@@ -417,23 +553,77 @@ def info(
             ("Problem Type", matrix.get("kind", "Unknown")),
         ]
 
-        # Add rows with proper formatting
-        for label, value in display_fields:
-            if value is not None:
-                if isinstance(value, bool):
-                    formatted_value = "✓" if value else "✗"
-                elif isinstance(value, int | float) and not isinstance(value, bool):
-                    if isinstance(value, float) and label not in [
-                        "Pattern Symmetry",
-                        "Numerical Symmetry",
-                    ]:
-                        formatted_value = f"{value:,.0f}"
-                    else:
-                        formatted_value = str(value)
-                else:
-                    formatted_value = str(value)
+        # Page-scraped structural info
+        page_structural_fields = [
+            ("Structural Rank", matrix.get("structural_rank")),
+            ("Structural Rank Full", matrix.get("structural_rank_full")),
+            ("Num Dmperm Blocks", matrix.get("num_dmperm_blocks")),
+            ("Strongly Connected Components", matrix.get("num_strong_components")),
+            ("Num Explicit Zeros", matrix.get("num_explicit_zeros")),
+            ("Cholesky Candidate", matrix.get("cholesky_candidate")),
+        ]
 
-                table.add_row(label, formatted_value)
+        # Page-scraped SVD statistics
+        page_svd_fields = [
+            ("Matrix Norm", matrix.get("matrix_norm")),
+            ("Min Singular Value", matrix.get("min_singular_value")),
+            ("Condition Number", matrix.get("condition_number")),
+            ("Numerical Rank", matrix.get("numerical_rank")),
+            ("sprank(A)-rank(A)", matrix.get("rank_deficiency")),
+            ("Null Space Dimension", matrix.get("null_space_dim")),
+            ("Full Numerical Rank", matrix.get("full_numerical_rank")),
+        ]
+
+        # Page-scraped basic info
+        page_basic_fields = [
+            ("Date", matrix.get("date")),
+            ("Author", matrix.get("author")),
+            ("Editor", matrix.get("editor")),
+        ]
+
+        def format_value(label: str, value: Any) -> str | None:
+            if value is None:
+                return None
+            if isinstance(value, bool):
+                return "✓" if value else "✗"
+            if isinstance(value, float):
+                if label in ("Pattern Symmetry", "Numerical Symmetry"):
+                    return str(value)
+                return f"{value:.6e}"
+            if isinstance(value, int) and not isinstance(value, bool):
+                return f"{value:,}"
+            return str(value)
+
+        for label, value in display_fields:
+            formatted = format_value(label, value)
+            if formatted is not None:
+                table.add_row(label, formatted)
+
+        # Add a section separator and page-scraped fields if any exist
+        has_structural = any(v is not None for _, v in page_structural_fields)
+        has_svd = any(v is not None for _, v in page_svd_fields)
+        has_basic = any(v is not None for _, v in page_basic_fields)
+
+        if has_basic:
+            table.add_row("─── Additional ───", "", style="dim")
+            for label, value in page_basic_fields:
+                formatted = format_value(label, value)
+                if formatted is not None:
+                    table.add_row(label, formatted)
+
+        if has_structural:
+            table.add_row("─── Structural ───", "", style="dim")
+            for label, value in page_structural_fields:
+                formatted = format_value(label, value)
+                if formatted is not None:
+                    table.add_row(label, formatted)
+
+        if has_svd:
+            table.add_row("─── SVD Statistics ───", "", style="dim")
+            for label, value in page_svd_fields:
+                formatted = format_value(label, value)
+                if formatted is not None:
+                    table.add_row(label, formatted)
 
         console.print(table)
 
