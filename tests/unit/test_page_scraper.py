@@ -138,9 +138,7 @@ class TestPageScraper:
 
         with patch("httpx.AsyncClient") as mock_client:
             mock_instance = AsyncMock()
-            mock_client.return_value.__aenter__ = AsyncMock(
-                return_value=mock_instance
-            )
+            mock_client.return_value.__aenter__ = AsyncMock(return_value=mock_instance)
             mock_client.return_value.__aexit__ = AsyncMock(return_value=False)
             mock_instance.get = AsyncMock(return_value=mock_response)
 
