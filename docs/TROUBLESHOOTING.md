@@ -29,32 +29,29 @@ sudo apt update && sudo apt install python3.12  # Ubuntu
 brew install python@3.12                        # macOS
 ```
 
-### uv Installation Issues
+### uv not found
 
 **Problem**: `command not found: uv`
 
-**Solution**:
-```bash
-# Install uv
-curl -LsSf https://astral.sh/uv/install.sh | sh
+**Solution**: Install uv using the [official installation guide](https://docs.astral.sh/uv/getting-started/installation/).
 
-# Alternative methods
-pip install uv
-brew install uv  # macOS
-```
+### ssdl not found
 
-**Problem**: Permission denied during installation
+**Problem**: `command not found: ssdl` after `uv tool install ssdownload`
 
 **Solution**:
-```bash
-# Use user installation
-pip install --user uv
 
-# Or use virtual environment
-python -m venv venv
-source venv/bin/activate
-pip install uv
+```bash
+uv tool update-shell
 ```
+
+Open a new terminal. Confirm the executable directory:
+
+```bash
+uv tool dir --bin
+```
+
+That directory must be on your `PATH` (on Windows, often `%USERPROFILE%\.local\bin`).
 
 ### Dependency Conflicts
 

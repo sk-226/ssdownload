@@ -49,22 +49,19 @@ uv run pytest
 uv run ssdl --help
 ```
 
-### Global Installation for Development
+### CLI installation for development
 
-For convenient CLI testing without `uv run` prefix:
+For convenient CLI testing without the `uv run` prefix:
 
 ```bash
-# Install globally for easy testing
-uv tool install .
+uv tool install -e .
 
-# Verify installation
 ssdl --help
 
 # After making code changes
 uv tool upgrade ssdownload --reinstall
 
-# Test changes immediately
-ssdl download ct20stif  # No need for uv run
+ssdl download ct20stif
 ```
 
 ### Alternative: pip setup

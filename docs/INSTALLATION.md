@@ -1,247 +1,64 @@
 # Installation Guide
 
-This guide covers all installation methods for the SuiteSparse Matrix Collection Downloader.
+How to install the SuiteSparse Matrix Collection Downloader CLI.
 
 ## Prerequisites
 
-- **Python 3.12+** - Required for full compatibility
-- **uv** (recommended) or **pip** for package management
+- **Python 3.12+**
+- **[uv](https://docs.astral.sh/uv/getting-started/installation/)** — install and update uv using the official documentation
 
-## Development Installation (Current)
-
-> **Note**: This package is currently in development and not yet published to PyPI.
-
-### Option 1: Using uv (Recommended)
+## Install the CLI
 
 ```bash
-# 1. Clone the repository
-git clone <repository-url>
-cd ssdownload
-
-# 2. Install uv if you haven't already
-curl -LsSf https://astral.sh/uv/install.sh | sh
-
-# 3. Install dependencies and set up development environment
-uv sync
-
-# 4. Test the installation
-uv run ssdl --help
-```
-
-#### Global Installation with uv tool
-
-For convenient CLI usage without the `uv run` prefix:
-
-```bash
-# From project root directory
-uv tool install .          # Install globally
-uv tool update-shell       # Update PATH (first time only)
-
-# Verify global installation
-ssdl --help
-
-# After code changes (development)
-uv tool upgrade ssdownload --reinstall   # Update wrapper
-```
-
-**Benefits:**
-- No need to type `uv run` prefix
-- Works from any directory
-- Better user experience for frequent CLI usage
-
-### Option 2: Using pip
-
-```bash
-# 1. Clone the repository
-git clone <repository-url>
-cd ssdownload
-
-# 2. Create a virtual environment (recommended)
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-
-# 3. Install in development mode
-pip install -e ".[dev]"
-
-# 4. Test the installation
+uv tool install ssdownload
+uv tool update-shell   # First time only, if ssdl is not on PATH
 ssdl --help
 ```
 
-## Future PyPI Installation
+The CLI is installed in an isolated tool environment (similar to pipx), not into your system Python site-packages.
 
-Once published to PyPI, installation will be simplified to:
+Upgrade after a new release:
 
 ```bash
-# Standard installation
-pip install ssdownload
-
-# With development dependencies
-pip install ssdownload[dev]
+uv tool upgrade ssdownload
 ```
+
+## Verify
+
+```bash
+ssdl --help
+ssdl groups
+ssdl info ct20stif
+```
+
+## Development
+
+To work from a git clone, see the [Development Guide](DEVELOPMENT.md).
 
 ## Configuration
 
-### Environment Variables
+### Environment variables
 
-Set `SSDOWNLOAD_CACHE_DIR` to change the default cache directory:
+Set `SSDOWNLOAD_CACHE_DIR` to override the default cache location:
 
 ```bash
 export SSDOWNLOAD_CACHE_DIR=/path/to/cache
 ```
 
-### Cache Directory
+On Windows (PowerShell):
 
-By default, matrices are downloaded to the current working directory. You can specify custom directories:
+```powershell
+$env:SSDOWNLOAD_CACHE_DIR = "C:\path\to\cache"
+```
+
+### Download directory
+
+By default, matrix files are written under the current working directory unless you pass `--output`:
 
 ```bash
-# CLI: specify output directory for single command
 ssdl download ct20stif --output ./my_matrices
-
-# Environment variable: applies to all commands
-export SSDOWNLOAD_CACHE_DIR=./my_matrices
-ssdl download ct20stif
-```
-
-## Verification
-
-Test your installation with these commands:
-
-### With uv run (Development)
-```bash
-# Check CLI is working
-uv run ssdl --help
-
-# Test basic functionality
-uv run ssdl groups  # List available matrix groups
-
-# Test download (small file)
-uv run ssdl info ct20stif  # Get matrix information
-```
-
-### With Global Installation
-```bash
-# Check CLI is working
-ssdl --help
-
-# Test basic functionality
-ssdl groups  # List available matrix groups
-
-# Test download (small file)
-ssdl info ct20stif  # Get matrix information
-```
-
-## Development Setup
-
-If you plan to contribute to the project:
-
-```bash
-# Install with development dependencies
-uv sync  # Installs all dev dependencies
-
-# Install pre-commit hooks
-uv run pre-commit install
-
-# Run tests to verify setup
-uv run pytest
-
-# Check code quality tools
-uv run ruff check src tests
-uv run mypy src
 ```
 
 ## Troubleshooting
 
-### Python Version Issues
-
-```bash
-# Check Python version
-python --version  # Should be 3.12+
-
-# If using pyenv
-pyenv install 3.12
-pyenv local 3.12
-```
-
-### uv Installation Issues
-
-```bash
-# Manual uv installation
-pip install uv
-
-# Alternative installation methods
-# See: https://docs.astral.sh/uv/getting-started/installation/
-```
-
-### Permission Issues
-
-```bash
-# If you get permission errors
-pip install --user -e .
-
-# Or use virtual environment
-python -m venv venv
-source venv/bin/activate
-pip install -e .
-```
-
-### Network Issues
-
-If you're behind a corporate firewall:
-
-```bash
-# Configure pip/uv to use your proxy
-export HTTPS_PROXY=https://your-proxy:port
-export HTTP_PROXY=http://your-proxy:port
-
-# Or configure in pip.conf/uv.toml
-```
-
-## Advanced Configuration
-
-### Custom Downloader Settings
-
-```python
-from ssdownload import SuiteSparseDownloader
-
-# Custom configuration
-downloader = SuiteSparseDownloader(
-    cache_dir="./matrices",     # Custom cache directory
-    workers=8,                  # Max concurrent downloads
-    timeout=120.0,              # HTTP timeout in seconds
-    verify_checksums=True       # Enable MD5 verification
-)
-```
-
-### Integration with Jupyter
-
-```bash
-# Install Jupyter support
-uv add jupyter ipykernel
-
-# Use in notebooks
-import asyncio
-from ssdownload import SuiteSparseDownloader
-
-downloader = SuiteSparseDownloader()
-path = await downloader.download_by_name("ct20stif")
-```
-
-## Docker Installation
-
-If you prefer containerized deployment:
-
-```dockerfile
-FROM python:3.12-slim
-
-WORKDIR /app
-COPY . .
-
-RUN pip install uv && uv sync
-CMD ["uv", "run", "ssdl", "--help"]
-```
-
-```bash
-# Build and run
-docker build -t ssdownload .
-docker run -v $(pwd)/matrices:/app/matrices ssdownload uv run ssdl download ct20stif
-```
+See [Troubleshooting Guide](TROUBLESHOOTING.md). For `ssdl: command not found`, run `uv tool update-shell` and open a new terminal.

@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### 🔄 Changed
+- Installation docs now recommend `uv tool install ssdownload` as the primary CLI setup; removed outdated PyPI-unpublished and `uvx` quick-start guidance
+- GitHub Release notes list `uv tool install` for CLI installs
+
 ### ✨ Added
 - **🆕 NEW**: System-wide cache directory support using platformdirs
   - 📁 Cache files now stored in OS-appropriate locations (e.g., `~/.cache/ssdownload/` on Linux/macOS)

@@ -2,19 +2,15 @@
 
 Comprehensive examples for using the SuiteSparse Matrix Collection Downloader.
 
-## Command Format Note
+## Command format
 
-Examples are shown in both formats:
-- **Global installation** (recommended): `ssdl command`
-- **Development with uv**: `uv run ssdl command`
-
-Choose the format that matches your installation method.
+Examples use `ssdl` after `uv tool install ssdownload` ([Installation Guide](INSTALLATION.md)). When working from a git clone, use `uv run ssdl` instead (see [Development Guide](DEVELOPMENT.md)).
 
 ## Basic CLI Examples
 
 ### Single Matrix Downloads
 
-#### Global Installation
+#### Installed CLI
 ```bash
 # Download by name (auto-detects group)
 ssdl download ct20stif
@@ -33,7 +29,7 @@ ssdl download ct20stif --output ./my_matrices
 ssdl download ct20stif --verify
 ```
 
-#### Development with uv
+#### From source
 ```bash
 # Download by name (auto-detects group)
 uv run ssdl download ct20stif
@@ -54,7 +50,7 @@ uv run ssdl download ct20stif --verify
 
 ### Matrix Information and Search
 
-#### Global Installation
+#### Installed CLI
 ```bash
 # Get matrix details
 ssdl info ct20stif
@@ -72,7 +68,7 @@ ssdl list --spd --field real --verbose
 ssdl list --name "stif" --limit 3
 ```
 
-#### Development with uv
+#### From source
 ```bash
 # Get matrix details
 uv run ssdl info ct20stif
@@ -92,7 +88,7 @@ uv run ssdl list --name "stif" --limit 3
 
 ### Bulk Downloads
 
-#### Global Installation
+#### Installed CLI
 ```bash
 # Download SPD matrices
 ssdl bulk --spd --max-files 5
@@ -107,7 +103,7 @@ ssdl bulk --group "Boeing" --group "HB" --max-files 15
 ssdl bulk --field real --size 5000:50000 --nnz :100000 --max-files 20
 ```
 
-#### Development with uv
+#### From source
 ```bash
 # Download SPD matrices
 uv run ssdl bulk --spd --max-files 5

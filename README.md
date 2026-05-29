@@ -17,41 +17,17 @@ A command-line tool and Python library that makes it easy to discover, download,
 
 ## 🚀 Quick Start
 
-```bash
-uvx --from ssdownload ssdl -h
-```
-
-The CLI is exposed via `uvx`, so you can reach it without a prior tool install.
-
-### Installation
+Requires [uv](https://docs.astral.sh/uv/getting-started/installation/).
 
 ```bash
-# Clone and install (not yet on PyPI)
-git clone <repository-url>
-cd ssdownload
-curl -LsSf https://astral.sh/uv/install.sh | sh  # Install uv
-uv sync                                           # Install dependencies
+uv tool install ssdownload
+uv tool update-shell   # First time only, if ssdl is not on PATH
+ssdl info ct20stif
 ```
 
-#### Global Installation (Recommended for Development)
-
-For easier command usage without `uv run` prefix:
-
-```bash
-# From project root (or use absolute path)
-uv tool install .          # Initial installation
-uv tool update-shell       # Update PATH (first time only)
-
-# Verify installation
-ssdl --help
-
-# After code changes
-uv tool upgrade ssdownload --reinstall   # Update wrapper only
-```
+See the [Installation Guide](docs/INSTALLATION.md) for details. To hack on the project, see the [Development Guide](docs/DEVELOPMENT.md).
 
 ### Basic Usage
-
-> **Command Format**: Use `ssdl` directly if you've done global installation, otherwise add `uv run` prefix.
 
 ```bash
 # Get matrix information
