@@ -7,9 +7,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Removed
-- Automatic Claude Code Review GitHub Actions workflow on pull requests
-
 ### ✨ Added
 - **🆕 NEW**: System-wide cache directory support using platformdirs
   - 📁 Cache files now stored in OS-appropriate locations (e.g., `~/.cache/ssdownload/` on Linux/macOS)
