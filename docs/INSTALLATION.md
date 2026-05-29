@@ -12,8 +12,11 @@ How to install the SuiteSparse Matrix Collection Downloader CLI.
 ```bash
 uv tool install ssdownload
 uv tool update-shell   # First time only, if ssdl is not on PATH
+# Open a new terminal so PATH changes apply (same shell: exec "$SHELL")
 ssdl --help
 ```
+
+`uv tool update-shell` edits your shell startup files; it does not update the current session. After the first install, open a new terminal before running `ssdl`.
 
 The CLI is installed in an isolated tool environment (similar to pipx), not into your system Python site-packages.
 

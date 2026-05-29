@@ -22,6 +22,7 @@ Requires [uv](https://docs.astral.sh/uv/getting-started/installation/).
 ```bash
 uv tool install ssdownload
 uv tool update-shell   # First time only, if ssdl is not on PATH
+# Open a new terminal so PATH changes apply
 ssdl info ct20stif
 ```
 
