@@ -136,15 +136,19 @@ jobs:
 
           ## Installation
 
+          CLI (recommended):
+
+          ```bash
+          uv tool install ssdownload==${{ github.ref_name }}
+          ```
+
+          Python library:
+
           ```bash
           pip install ssdownload==${{ github.ref_name }}
           ```
 
-          or
-
-          ```bash
-          uv add ssdownload==${{ github.ref_name }}
-          ```
+          See [Installation Guide](https://github.com/${{ github.repository }}/blob/main/docs/INSTALLATION.md).
 
           ---
 

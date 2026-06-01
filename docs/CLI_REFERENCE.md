@@ -4,12 +4,9 @@ Complete command-line interface reference for the SuiteSparse Matrix Collection 
 
 ## Command Usage
 
-This reference shows commands using the global installation format (`ssdl`). If you're using development installation with uv, prefix all commands with `uv run`:
+Commands use the `ssdl` CLI after `uv tool install ssdownload` (see [Installation Guide](INSTALLATION.md)).
 
-- **Global installation**: `ssdl download ct20stif`
-- **Development with uv**: `uv run ssdl download ct20stif`
-
-See [Installation Guide](INSTALLATION.md) for setup instructions.
+When developing from a git clone, prefix commands with `uv run`, for example `uv run ssdl download ct20stif`.
 
 ## Commands Overview
 
