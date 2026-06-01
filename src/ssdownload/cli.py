@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import builtins
+from pathlib import Path
 from typing import Any
 
 import typer
@@ -237,10 +238,25 @@ def bulk(
         flat_structure=flat,
     )
 
+    needs_page = filter_obj is not None and filter_obj.requires_page_data()
+
+    async def run_bulk() -> builtins.list[Path]:
+        if needs_page and filter_obj is not None:
+            index_downloader = SuiteSparseDownloader()
+            matrices = await _list_with_page_filter(
+                index_downloader, filter_obj, max_files
+            )
+            if not matrices:
+                return []
+            return await downloader.bulk_download(
+                format_type=format,
+                output_dir=None,
+                matrices=matrices,
+            )
+        return await downloader.bulk_download(filter_obj, format, None, max_files)
+
     try:
-        results = asyncio.run(
-            downloader.bulk_download(filter_obj, format, None, max_files)
-        )
+        results = asyncio.run(run_bulk())
         console.print(f"✓ Downloaded {len(results)} matrices")
     except Exception as e:
         console.print(f"✗ Error: {e}", style="red")
@@ -444,9 +460,11 @@ async def _list_with_page_filter(
     )
 
     # Phase 2: Enrich with page data and apply full filter
-    scraper = PageScraper(downloader.cache_dir)
+    scraper = PageScraper()
     enriched = await scraper.enrich_matrices(csv_candidates)
     results = [m for m in enriched if filter_obj.matches(m)]
+    if limit is not None:
+        results = results[:limit]
     return results
 
 

@@ -8,6 +8,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### ✨ Added
+- Page-scraped matrix metadata filters (`--cond`, `--norm`, `--rank`, etc.) for `ssdl list`, `ssdl bulk`, and `ssdl info`
+- `PageScraper` module with disk cache for SVD statistics and structural properties from sparse.tamu.edu matrix pages
+
+### 🔧 Fixed
+- `ssdl bulk` now applies the same two-phase page filtering as `ssdl list` when using page-derived filter options
+- Page info cache is stored in the system cache directory so `ssdl clean-cache` reliably clears it
+
+### ✨ Added (previous releases in development)
 - **🆕 NEW**: System-wide cache directory support using platformdirs
   - 📁 Cache files now stored in OS-appropriate locations (e.g., `~/.cache/ssdownload/` on Linux/macOS)
   - 🧹 No more scattered `ssstats_cache.json` files in working directories

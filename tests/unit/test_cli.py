@@ -1,7 +1,8 @@
 """Tests for CLI module."""
 
+import asyncio
 from pathlib import Path
-from unittest.mock import MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock, patch
 
 from typer.testing import CliRunner
 
@@ -351,6 +352,62 @@ class TestCLI:
         mock_downloader.assert_called_once()
         call_kwargs = mock_downloader.call_args.kwargs
         assert call_kwargs["flat_structure"] is True
+
+    @patch("ssdownload.cli._list_with_page_filter", new_callable=AsyncMock)
+    @patch("ssdownload.cli.SuiteSparseDownloader")
+    def test_bulk_command_page_filters_use_two_phase(
+        self, mock_downloader_class, mock_list_with_page
+    ):
+        """Bulk with page-only filters should enrich via page scraping before download."""
+        matched = [{"group": "Boeing", "name": "ct20stif", "condition_number": 1e3}]
+        mock_list_with_page.return_value = matched
+        download_downloader = MagicMock()
+        download_downloader.bulk_download = AsyncMock(
+            return_value=[Path("/out/Boeing/ct20stif.mat")]
+        )
+        index_downloader = MagicMock()
+        mock_downloader_class.side_effect = [download_downloader, index_downloader]
+
+        result = self.runner.invoke(
+            app,
+            ["bulk", "--cond", ":1e5", "--size", "100:500", "--max-files", "3"],
+        )
+
+        assert result.exit_code == 0
+        assert "Downloaded 1 matrices" in result.stdout
+        mock_list_with_page.assert_awaited_once()
+        download_downloader.bulk_download.assert_awaited_once()
+        call_kwargs = download_downloader.bulk_download.await_args.kwargs
+        assert call_kwargs["matrices"] == matched
+        assert call_kwargs["format_type"] == "mat"
+
+    @patch("ssdownload.cli.PageScraper")
+    @patch("ssdownload.cli.SuiteSparseDownloader")
+    def test_list_with_page_filter_uses_system_cache_dir(
+        self, mock_downloader_class, mock_page_scraper_class
+    ):
+        """Page metadata cache should use the default cache dir, not the download cwd."""
+        from ssdownload.cli import _list_with_page_filter
+        from ssdownload.filters import Filter
+
+        mock_downloader = MagicMock()
+        mock_downloader.find_matrices = AsyncMock(
+            return_value=[{"group": "Boeing", "name": "ct20stif"}]
+        )
+
+        scraper = MagicMock()
+        scraper.enrich_matrices = AsyncMock(
+            side_effect=lambda matrices: [
+                {**m, "condition_number": 1e3} for m in matrices
+            ],
+        )
+        mock_page_scraper_class.return_value = scraper
+
+        filter_obj = Filter(condition_number=(None, 1e5))
+        results = asyncio.run(_list_with_page_filter(mock_downloader, filter_obj))
+
+        assert len(results) == 1
+        mock_page_scraper_class.assert_called_once_with()
 
     @patch("ssdownload.cli.SuiteSparseDownloader")
     @patch("ssdownload.cli.asyncio.run")
