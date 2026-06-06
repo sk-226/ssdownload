@@ -13,6 +13,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Installation docs note that a new terminal is required after `uv tool update-shell` before `ssdl` is on PATH
 
 ### ✨ Added
+- Page-scraped matrix metadata filters (`--cond`, `--norm`, `--rank`, etc.) for `ssdl list`, `ssdl bulk`, and `ssdl info`
+- `PageScraper` module with disk cache for SVD statistics and structural properties from sparse.tamu.edu matrix pages
+
+### 🔧 Fixed
+- `ssdl bulk` now applies the same two-phase page filtering as `ssdl list` when using page-derived filter options
+- Page info cache is stored in the system cache directory so `ssdl clean-cache` reliably clears it
+- `ssdl list` now reports the full total count before applying `--limit` when using page-derived filters
+
+### ✨ Added (previous releases in development)
 - **🆕 NEW**: System-wide cache directory support using platformdirs
   - 📁 Cache files now stored in OS-appropriate locations (e.g., `~/.cache/ssdownload/` on Linux/macOS)
   - 🧹 No more scattered `ssstats_cache.json` files in working directories

@@ -123,7 +123,7 @@ ssdl list [FILTER_OPTIONS] [OPTIONS]
 ```
 
 **Options:**
-- `--limit` - Maximum number of results to show
+- `--limit` - Maximum number of results to show; total match counts are computed before this display limit is applied
 - `--verbose, -v` - Show detailed information
 
 **Examples:**

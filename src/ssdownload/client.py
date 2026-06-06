@@ -199,23 +199,24 @@ class SuiteSparseDownloader:
         format_type: str = "mat",
         output_dir: str | Path | None = None,
         max_files: int | None = None,
+        matrices: list[dict[str, Any]] | None = None,
     ) -> list[Path]:
         """Download multiple matrices matching filter criteria.
 
         Args:
-            filter_obj: Filter criteria
+            filter_obj: Filter criteria (ignored when ``matrices`` is provided)
             format_type: File format ('mat', 'mm', 'rb')
             output_dir: Output directory
             max_files: Maximum number of files to download
+            matrices: Pre-resolved matrix metadata (e.g. after page-scraped filtering)
 
         Returns:
             List of paths to downloaded files
         """
-        # Find matching matrices
-        matrices = await self.find_matrices(filter_obj)
-
-        if max_files is not None:
-            matrices = matrices[:max_files]
+        if matrices is None:
+            matrices = await self.find_matrices(filter_obj)
+            if max_files is not None:
+                matrices = matrices[:max_files]
 
         if not matrices:
             self.console.print("No matrices found matching criteria")

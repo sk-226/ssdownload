@@ -10,10 +10,12 @@ from .exceptions import (
     SSDownloadError,
 )
 from .filters import Filter
+from .page_scraper import PageScraper
 
 __all__ = [
     "SuiteSparseDownloader",
     "Filter",
+    "PageScraper",
     "SSDownloadError",
     "ChecksumError",
     "MatrixNotFoundError",
