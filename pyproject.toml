@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "ssdownload"
-version = "0.1.0"
+version = "0.2.0"
 description = "Download sparse matrices from SuiteSparse Matrix Collection"
 readme = "README.md"
 license = "MIT"
