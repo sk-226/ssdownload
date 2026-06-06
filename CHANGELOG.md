@@ -7,16 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-06-06
+
 ### 🔄 Changed
 - Installation docs now recommend `uv tool install ssdownload` as the primary CLI setup; removed outdated PyPI-unpublished and `uvx` quick-start guidance
 - GitHub Release notes list `uv tool install` for CLI installs
 - Installation docs note that a new terminal is required after `uv tool update-shell` before `ssdl` is on PATH
+- Development docs now describe the tag-driven GitHub Actions release process
 
 ### ✨ Added
 - Page-scraped matrix metadata filters (`--cond`, `--norm`, `--rank`, etc.) for `ssdl list`, `ssdl bulk`, and `ssdl info`
 - `PageScraper` module with disk cache for SVD statistics and structural properties from sparse.tamu.edu matrix pages
 
 ### 🔧 Fixed
+- GitHub Release install commands now use the package version without the `v` tag prefix
 - `ssdl bulk` now applies the same two-phase page filtering as `ssdl list` when using page-derived filter options
 - Page info cache is stored in the system cache directory so `ssdl clean-cache` reliably clears it
 - `ssdl list` now reports the full total count before applying `--limit` when using page-derived filters

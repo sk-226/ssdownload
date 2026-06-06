@@ -384,18 +384,21 @@ python test_doc_examples.py
 ### Release Commands
 
 ```bash
-# Build package
+# Local verification
+uv run ruff check src tests
+uv run ruff format --check src tests
+uv run mypy src
+uv run pytest tests -m "not slow"
 uv build
 
-# Test build
-uv run python -m twine check dist/*
-
-# Upload to test PyPI
-uv run python -m twine upload --repository testpypi dist/*
-
-# Upload to PyPI
-uv run python -m twine upload dist/*
+# Create the GitHub/PyPI release after merging the release commit
+git tag v0.2.0
+git push origin v0.2.0
 ```
+
+Pushing a `v*.*.*` tag runs `.github/workflows/release.yml`, which verifies
+that the tag version matches `pyproject.toml`, publishes to PyPI with
+`uv publish`, and creates the GitHub Release.
 
 ## Debugging and Profiling
 

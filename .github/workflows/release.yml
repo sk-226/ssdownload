@@ -118,6 +118,12 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
+    - name: Extract version from tag
+      id: version
+      run: |
+        VERSION=${GITHUB_REF#refs/tags/v}
+        echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+
     - name: Download build artifacts
       uses: actions/download-artifact@v4
       with:
@@ -139,13 +145,13 @@ jobs:
           CLI (recommended):
 
           ```bash
-          uv tool install ssdownload==${{ github.ref_name }}
+          uv tool install ssdownload==${{ steps.version.outputs.VERSION }}
           ```
 
           Python library:
 
           ```bash
-          pip install ssdownload==${{ github.ref_name }}
+          pip install ssdownload==${{ steps.version.outputs.VERSION }}
           ```
 
           See [Installation Guide](https://github.com/${{ github.repository }}/blob/main/docs/INSTALLATION.md).
