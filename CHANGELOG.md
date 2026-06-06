@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### 🔧 Fixed
 - `ssdl bulk` now applies the same two-phase page filtering as `ssdl list` when using page-derived filter options
 - Page info cache is stored in the system cache directory so `ssdl clean-cache` reliably clears it
+- `ssdl list` now reports the full total count before applying `--limit` when using page-derived filters
 
 ### ✨ Added (previous releases in development)
 - **🆕 NEW**: System-wide cache directory support using platformdirs

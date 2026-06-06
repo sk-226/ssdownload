@@ -381,6 +381,32 @@ class TestCLI:
         assert call_kwargs["matrices"] == matched
         assert call_kwargs["format_type"] == "mat"
 
+    @patch("ssdownload.cli._list_with_page_filter", new_callable=AsyncMock)
+    def test_list_page_filters_preserve_total_count(self, mock_list_with_page):
+        """List limit should affect display count, not the page-filtered total count."""
+        mock_list_with_page.return_value = [
+            {
+                "group": "G",
+                "name": f"m{i}",
+                "rows": 10,
+                "cols": 10,
+                "nnz": 20,
+                "field": "real",
+                "condition_number": float(i),
+            }
+            for i in range(1, 4)
+        ]
+
+        result = self.runner.invoke(app, ["list", "--cond", ":10", "--limit", "2"])
+
+        assert result.exit_code == 0
+        assert "showing 2 of 3 total" in result.stdout
+        assert "G/m1" in result.stdout
+        assert "G/m2" in result.stdout
+        assert "G/m3" not in result.stdout
+        mock_list_with_page.assert_awaited_once()
+        assert mock_list_with_page.await_args.args[2:] == ()
+
     @patch("ssdownload.cli.PageScraper")
     @patch("ssdownload.cli.SuiteSparseDownloader")
     def test_list_with_page_filter_uses_system_cache_dir(

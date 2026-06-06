@@ -344,9 +344,7 @@ def list(
 
         if needs_page and filter_obj is not None:
             # Two-phase filtering: CSV first, then page scraping
-            page_results = asyncio.run(
-                _list_with_page_filter(downloader, filter_obj, limit)
-            )
+            page_results = asyncio.run(_list_with_page_filter(downloader, filter_obj))
             total_count = len(page_results)
             if limit is not None:
                 page_results = page_results[:limit]
