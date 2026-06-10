@@ -6,6 +6,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 from typer.testing import CliRunner
 
+from ssdownload import __version__
 from ssdownload.cli import app
 from ssdownload.cli_utils import parse_range
 from tests.helpers import plain_output
@@ -48,6 +49,20 @@ class TestCLI:
         result = self.runner.invoke(app, ["--help"])
         assert result.exit_code == 0
         assert "Download sparse matrices" in result.stdout
+
+    def test_version_option(self):
+        """Test version option displays the package version."""
+        result = self.runner.invoke(app, ["--version"])
+
+        assert result.exit_code == 0
+        assert result.stdout == f"ssdl {__version__}\n"
+
+    def test_version_option_is_shown_in_help(self):
+        """Test version option is listed in top-level help."""
+        result = self.runner.invoke(app, ["--help"], color=True)
+
+        assert result.exit_code == 0
+        assert "--version" in plain_output(result)
 
     @patch("ssdownload.cli.SuiteSparseDownloader")
     @patch("ssdownload.cli.asyncio.run")
