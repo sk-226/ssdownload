@@ -43,6 +43,9 @@ ssdl download ct20stif --format mm
 # Search matrices with filters
 ssdl list --spd --size 1000:10000 --field real
 
+# Search square unsymmetric matrices
+ssdl list --square --structure unsymmetric
+
 # Bulk download (real) SPD matrices in size range
 ssdl bulk --spd --field real --size 100:1000 --max-files 5
 ```
@@ -60,6 +63,9 @@ path = await downloader.download_by_name("ct20stif")
 # Filtered bulk download
 filter_obj = Filter(spd=True, n_rows=(1000, 10000))
 paths = await downloader.bulk_download(filter_obj, max_files=5)
+
+# Find rectangular matrices
+rectangular = await downloader.find_matrices(Filter(square=False))
 ```
 
 </details>

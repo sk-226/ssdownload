@@ -10,6 +10,7 @@ class Filter:
 
     Attributes:
         spd: Filter for symmetric positive definite matrices
+        square: Filter for square (True) or rectangular (False) matrices
         n_rows: Tuple of (min, max) for number of rows
         n_cols: Tuple of (min, max) for number of columns
         nnz: Tuple of (min, max) for number of nonzeros
@@ -47,6 +48,7 @@ class Filter:
     num_dmperm_blocks: tuple[int | None, int | None] | None = None
     structural_rank: tuple[int | None, int | None] | None = None
     cholesky_candidate: bool | None = None
+    square: bool | None = None
 
     def matches(self, matrix_info: dict[str, Any]) -> bool:
         """Check if a matrix matches this filter.
@@ -73,6 +75,13 @@ class Filter:
         # Check positive definite flag
         if self.posdef is not None and matrix_info.get("posdef") != self.posdef:
             return False
+
+        # Check matrix shape
+        if self.square is not None:
+            rows = matrix_info.get("num_rows", matrix_info.get("rows"))
+            cols = matrix_info.get("num_cols", matrix_info.get("cols"))
+            if rows is None or cols is None or (rows == cols) != self.square:
+                return False
 
         # Check number of rows
         if self.n_rows is not None:
@@ -221,6 +230,9 @@ class Filter:
 
         if self.posdef is not None:
             result["posdef"] = self.posdef
+
+        if self.square is not None:
+            result["square"] = self.square
 
         if self.n_rows is not None:
             result["n_rows"] = self.n_rows

@@ -26,6 +26,15 @@ app = typer.Typer(
 console = Console()
 
 
+def _build_filter_or_exit(**kwargs: Any) -> Filter | None:
+    """Build a filter and report invalid CLI filter combinations."""
+    try:
+        return build_filter(**kwargs)
+    except ValueError as e:
+        console.print(f"✗ Error: {e}", style="red")
+        raise typer.Exit(2) from e
+
+
 @app.command()
 def download(
     identifier: str = typer.Argument(..., help="Matrix name or group/name"),
@@ -143,6 +152,10 @@ def bulk(
     spd: bool = typer.Option(
         False, "--spd", help="Symmetric positive definite matrices only"
     ),
+    square: bool = typer.Option(False, "--square", help="Square matrices only"),
+    rectangle: bool = typer.Option(
+        False, "--rectangle", help="Rectangular matrices only"
+    ),
     size: str | None = typer.Option(
         None, "--size", help="Matrix size range (e.g., '1000:5000')"
     ),
@@ -208,8 +221,10 @@ def bulk(
 ):
     """Download multiple matrices matching filter criteria."""
     # Build filter
-    filter_obj = build_filter(
+    filter_obj = _build_filter_or_exit(
         spd=spd,
+        square=square,
+        rectangle=rectangle,
         size=size,
         rows=rows,
         cols=cols,
@@ -268,6 +283,10 @@ def list(
     spd: bool = typer.Option(
         False, "--spd", help="Symmetric positive definite matrices only"
     ),
+    square: bool = typer.Option(False, "--square", help="Square matrices only"),
+    rectangle: bool = typer.Option(
+        False, "--rectangle", help="Rectangular matrices only"
+    ),
     size: str | None = typer.Option(
         None, "--size", help="Matrix size range (e.g., '1000:5000')"
     ),
@@ -316,8 +335,10 @@ def list(
 ):
     """List matrices matching filter criteria."""
     # Build filter
-    filter_obj = build_filter(
+    filter_obj = _build_filter_or_exit(
         spd=spd,
+        square=square,
+        rectangle=rectangle,
         size=size,
         rows=rows,
         cols=cols,

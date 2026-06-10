@@ -8,6 +8,7 @@ from typer.testing import CliRunner
 
 from ssdownload.cli import app
 from ssdownload.cli_utils import parse_range
+from tests.helpers import plain_output
 
 
 class TestCLI:
@@ -280,6 +281,50 @@ class TestCLI:
             result = self.runner.invoke(app, [cmd, "--help"])
             assert result.exit_code == 0
             assert len(result.stdout) > 50  # Should have substantial help text
+
+    def test_shape_options_are_shown_in_filter_command_help(self):
+        """List and bulk help should expose both shape filters."""
+        for command in ("list", "bulk"):
+            result = self.runner.invoke(app, [command, "--help"], color=True)
+            output = plain_output(result)
+
+            assert result.exit_code == 0
+            assert "--square" in output
+            assert "--rectangle" in output
+
+    @patch("ssdownload.cli.SuiteSparseDownloader")
+    def test_list_square_filter(self, mock_downloader_class):
+        """List should pass a square filter to the downloader."""
+        mock_downloader = MagicMock()
+        mock_downloader.list_matrices.return_value = ([], 0)
+        mock_downloader_class.return_value = mock_downloader
+
+        result = self.runner.invoke(app, ["list", "--square"])
+
+        assert result.exit_code == 0
+        filter_obj = mock_downloader.list_matrices.call_args.args[0]
+        assert filter_obj.square is True
+
+    @patch("ssdownload.cli.SuiteSparseDownloader")
+    def test_bulk_rectangle_filter(self, mock_downloader_class):
+        """Bulk should pass a rectangular filter to the download workflow."""
+        mock_downloader = MagicMock()
+        mock_downloader.bulk_download = AsyncMock(return_value=[])
+        mock_downloader_class.return_value = mock_downloader
+
+        result = self.runner.invoke(app, ["bulk", "--rectangle"])
+
+        assert result.exit_code == 0
+        filter_obj = mock_downloader.bulk_download.await_args.args[0]
+        assert filter_obj.square is False
+
+    def test_shape_options_are_mutually_exclusive(self):
+        """Commands should clearly reject conflicting shape filters."""
+        for command in ("list", "bulk"):
+            result = self.runner.invoke(app, [command, "--square", "--rectangle"])
+
+            assert result.exit_code == 2
+            assert "--square and --rectangle cannot be used together" in result.stdout
 
     @patch("ssdownload.cli.Config.get_default_cache_dir")
     def test_clean_cache_no_cache_file(self, mock_cache_dir):

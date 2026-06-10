@@ -194,12 +194,14 @@ Filter(
     group: Optional[str] = None,
     name: Optional[str] = None,
     kind: Optional[str] = None,
-    structure: Optional[str] = None
+    structure: Optional[str] = None,
+    square: Optional[bool] = None
 )
 ```
 
 **Parameters:**
 - `spd` - Symmetric positive definite flag
+- `square` - `True` for square matrices or `False` for rectangular matrices
 - `n_rows` - Row count range (min, max)
 - `n_cols` - Column count range (min, max)
 - `nnz` - Non-zero count range (min, max)
@@ -222,6 +224,9 @@ filter3 = Filter(n_rows=(100000, None), nnz=(None, 1000000))
 
 # Search by name pattern
 filter4 = Filter(name="stif")
+
+# Rectangular matrices
+filter5 = Filter(square=False)
 ```
 
 ## Exception Handling
