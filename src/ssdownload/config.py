@@ -50,7 +50,7 @@ class Config:
     # HTTP client settings
     MAX_CONNECTIONS: int = 10
     MAX_KEEPALIVE_CONNECTIONS: int = 5
-    USER_AGENT: str = "ssdownload/0.3.0 (Python SuiteSparse downloader)"
+    USER_AGENT: str = "ssdownload/0.3.1 (Python SuiteSparse downloader)"
 
     @classmethod
     def get_http_client_config(cls, timeout: float | None = None) -> dict[str, Any]:

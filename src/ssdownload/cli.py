@@ -11,6 +11,7 @@ import typer
 from rich.console import Console
 from rich.table import Table
 
+from . import __version__
 from .cli_utils import build_filter
 from .client import SuiteSparseDownloader
 from .config import Config
@@ -24,6 +25,26 @@ app = typer.Typer(
 )
 
 console = Console()
+
+
+def _version_callback(value: bool) -> None:
+    """Print the package version and exit."""
+    if value:
+        typer.echo(f"ssdl {__version__}")
+        raise typer.Exit()
+
+
+@app.callback()
+def main(
+    version: bool = typer.Option(
+        False,
+        "--version",
+        help="Show the version and exit.",
+        callback=_version_callback,
+        is_eager=True,
+    ),
+) -> None:
+    """Download sparse matrices from SuiteSparse Matrix Collection."""
 
 
 def _build_filter_or_exit(**kwargs: Any) -> Filter | None:
