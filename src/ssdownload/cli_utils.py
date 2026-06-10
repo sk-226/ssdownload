@@ -110,12 +110,21 @@ def build_filter(
     num_dmperm_blocks: str | None = None,
     structural_rank: str | None = None,
     cholesky_candidate: bool | None = None,
+    square: bool = False,
+    rectangle: bool = False,
 ) -> Filter | None:
     """Build a Filter object from CLI arguments."""
     filter_kwargs: dict[str, Any] = {}
 
+    if square and rectangle:
+        raise ValueError("--square and --rectangle cannot be used together")
+
     if spd:
         filter_kwargs["spd"] = True
+    if square:
+        filter_kwargs["square"] = True
+    elif rectangle:
+        filter_kwargs["square"] = False
     if field:
         filter_kwargs["field"] = field
     if group:

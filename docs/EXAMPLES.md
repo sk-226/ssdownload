@@ -64,6 +64,9 @@ ssdl list --size 1000:10000 --limit 5
 # Search SPD matrices
 ssdl list --spd --field real --verbose
 
+# Search square unsymmetric matrices
+ssdl list --square --structure unsymmetric
+
 # Search by name pattern
 ssdl list --name "stif" --limit 3
 ```
@@ -82,6 +85,9 @@ uv run ssdl list --size 1000:10000 --limit 5
 # Search SPD matrices
 uv run ssdl list --spd --field real --verbose
 
+# Search rectangular matrices
+uv run ssdl list --rectangle --verbose
+
 # Search by name pattern
 uv run ssdl list --name "stif" --limit 3
 ```
@@ -92,6 +98,9 @@ uv run ssdl list --name "stif" --limit 3
 ```bash
 # Download SPD matrices
 ssdl bulk --spd --max-files 5
+
+# Download rectangular matrices
+ssdl bulk --rectangle --max-files 5
 
 # Download by size range in Matrix Market format
 ssdl bulk --size 1000:5000 --format mm --max-files 10

@@ -105,6 +105,9 @@ ssdl bulk [FILTER_OPTIONS] [OPTIONS]
 # Download SPD matrices
 ssdl bulk --spd --max-files 10
 
+# Download rectangular matrices
+ssdl bulk --rectangle --max-files 10
+
 # Download small to medium matrices in Matrix Market format
 ssdl bulk --size 1000:50000 --format mm --output ./matrices
 
@@ -139,6 +142,9 @@ ssdl list --name "stif" --verbose
 
 # List SPD matrices with size constraints
 ssdl list --spd --size 1000:10000 --field real
+
+# List square unsymmetric matrices
+ssdl list --square --structure unsymmetric
 ```
 
 ### `ssdl info`
@@ -173,8 +179,12 @@ These filters can be used with `bulk` and `list` commands:
 
 ### Matrix Properties
 - `--spd` - Symmetric positive definite matrices only (automatically filters for symmetric AND positive definite AND square matrices)
+- `--square` - Square matrices only (rows equal columns)
+- `--rectangle` - Rectangular matrices only (rows differ from columns)
 - `--field TYPE` - Field type: `real`, `complex`, `integer`, `binary`
 - `--structure TYPE` - Matrix structure: `symmetric`, `unsymmetric`, etc.
+
+`--square` and `--rectangle` cannot be used together.
 
 ### Size Filters
 - `--size MIN:MAX` - Matrix size range (applies to both rows and columns)

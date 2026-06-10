@@ -56,6 +56,30 @@ class TestFilter:
         }
         assert not filter_obj.matches(non_square)
 
+    def test_square_filter(self):
+        """Square filters should compare row and column counts."""
+        filter_obj = Filter(square=True)
+
+        assert filter_obj.matches({"num_rows": 100, "num_cols": 100})
+        assert not filter_obj.matches({"num_rows": 100, "num_cols": 200})
+
+    def test_rectangle_filter(self):
+        """Rectangular filters should require different row and column counts."""
+        filter_obj = Filter(square=False)
+
+        assert filter_obj.matches({"num_rows": 100, "num_cols": 200})
+        assert not filter_obj.matches({"num_rows": 100, "num_cols": 100})
+
+    def test_shape_filter_alternative_field_names(self):
+        """Shape filters should support CSV row and column field names."""
+        assert Filter(square=True).matches({"rows": 100, "cols": 100})
+        assert Filter(square=False).matches({"rows": 100, "cols": 200})
+
+    def test_shape_filter_missing_dimensions(self):
+        """Shape filters should reject matrices with incomplete dimensions."""
+        assert not Filter(square=True).matches({"num_rows": 100})
+        assert not Filter(square=False).matches({"num_cols": 100})
+
     def test_size_range_filter(self):
         """Test size range filtering."""
         filter_obj = Filter(n_rows=(100, 1000))
@@ -154,17 +178,20 @@ class TestFilter:
         """Test conversion to dictionary."""
         filter_obj = Filter(
             spd=True,
+            square=True,
             n_rows=(100, 1000),
             field="real",
         )
 
         expected = {
             "spd": True,
+            "square": True,
             "n_rows": (100, 1000),
             "field": "real",
         }
 
         assert filter_obj.to_dict() == expected
+        assert Filter(square=False).to_dict() == {"square": False}
 
     def test_missing_fields_dont_match(self):
         """Test that missing fields in matrix info don't cause matches."""

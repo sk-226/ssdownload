@@ -1,5 +1,7 @@
 """Tests for cli_utils module."""
 
+import pytest
+
 from ssdownload.cli_utils import build_filter, parse_range
 from ssdownload.filters import Filter
 
@@ -49,6 +51,25 @@ class TestCliUtils:
         assert result.spd is True
         assert result.posdef is None
 
+    def test_build_filter_square(self):
+        """Test building a square matrix filter."""
+        result = build_filter(square=True)
+        assert isinstance(result, Filter)
+        assert result.square is True
+
+    def test_build_filter_rectangle(self):
+        """Test building a rectangular matrix filter."""
+        result = build_filter(rectangle=True)
+        assert isinstance(result, Filter)
+        assert result.square is False
+
+    def test_build_filter_rejects_conflicting_shape_flags(self):
+        """Square and rectangle flags should be mutually exclusive."""
+        with pytest.raises(
+            ValueError, match="--square and --rectangle cannot be used together"
+        ):
+            build_filter(square=True, rectangle=True)
+
     def test_build_filter_string_fields(self):
         """Test building filter with string fields."""
         result = build_filter(
@@ -97,6 +118,7 @@ class TestCliUtils:
         """Test building filter with all parameters."""
         result = build_filter(
             spd=True,
+            square=True,
             size="1000:5000",
             rows="2000:3000",
             cols="4000:6000",
@@ -109,6 +131,7 @@ class TestCliUtils:
         )
         assert isinstance(result, Filter)
         assert result.spd is True
+        assert result.square is True
         assert result.n_rows == (2000, 3000)  # Should override size
         assert result.n_cols == (4000, 6000)  # Should override size
         assert result.nnz == (None, 1000000)

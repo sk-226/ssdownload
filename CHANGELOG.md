@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### ✨ Added
+- Added `--square` and `--rectangle` filters to `ssdl list` and `ssdl bulk`
+- Added `Filter(square=True|False)` for square and rectangular matrix filtering
+
 ## [0.2.0] - 2026-06-06
 
 ### 🔄 Changed
