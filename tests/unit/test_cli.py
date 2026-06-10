@@ -8,6 +8,7 @@ from typer.testing import CliRunner
 
 from ssdownload.cli import app
 from ssdownload.cli_utils import parse_range
+from tests.helpers import plain_output
 
 
 class TestCLI:
@@ -284,11 +285,12 @@ class TestCLI:
     def test_shape_options_are_shown_in_filter_command_help(self):
         """List and bulk help should expose both shape filters."""
         for command in ("list", "bulk"):
-            result = self.runner.invoke(app, [command, "--help"])
+            result = self.runner.invoke(app, [command, "--help"], color=True)
+            output = plain_output(result)
 
             assert result.exit_code == 0
-            assert "--square" in result.stdout
-            assert "--rectangle" in result.stdout
+            assert "--square" in output
+            assert "--rectangle" in output
 
     @patch("ssdownload.cli.SuiteSparseDownloader")
     def test_list_square_filter(self, mock_downloader_class):
