@@ -392,8 +392,8 @@ uv run pytest tests -m "not slow"
 uv build
 
 # Create the GitHub/PyPI release after merging the release commit
-git tag v0.2.0
-git push origin v0.2.0
+git tag v0.3.0
+git push origin v0.3.0
 ```
 
 Pushing a `v*.*.*` tag runs `.github/workflows/release.yml`, which verifies
